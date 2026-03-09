@@ -1,11 +1,12 @@
 import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "../shopify.server";
+import { handleOrderFulfilled } from "../lib/notifications/order";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { shop, payload, topic } = await authenticate.webhook(request);
-
   console.log(`Received ${topic} webhook for ${shop}`);
 
-  // TODO: call handleOrderFulfilled(shop, payload) to send SMS notification
+  await handleOrderFulfilled(shop, payload);
+
   return new Response();
 };
