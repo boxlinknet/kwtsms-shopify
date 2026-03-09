@@ -4,7 +4,7 @@
 
 If you discover a security vulnerability, please report it responsibly:
 
-- Email: mo@boxlink.net
+- Email: support@kwtsms.com
 - Do NOT open a public GitHub issue for security vulnerabilities
 
 ## Security Practices
