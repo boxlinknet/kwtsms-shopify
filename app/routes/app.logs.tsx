@@ -1,0 +1,268 @@
+import { useState, useCallback } from "react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { useLoaderData, useSearchParams, useSubmit } from "react-router";
+import { authenticate } from "../shopify.server";
+import { getLogs, getLogStats, clearLogs } from "../lib/db/logs";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  const url = new URL(request.url);
+
+  const status = url.searchParams.get("status") || undefined;
+  const eventType = url.searchParams.get("eventType") || undefined;
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+
+  const [logsResult, stats] = await Promise.all([
+    getLogs(session.shop, { status, eventType, page, pageSize: 20 }),
+    getLogStats(session.shop),
+  ]);
+
+  return {
+    logs: logsResult.logs,
+    total: logsResult.total,
+    stats,
+    currentPage: page,
+    totalPages: Math.ceil(logsResult.total / 20),
+  };
+};
+
+export const action = async ({ request }: ActionFunctionArgs) => {
+  const { session } = await authenticate.admin(request);
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+
+  if (intent === "clear_logs") {
+    const deleted = await clearLogs(session.shop);
+    return { success: true, deleted };
+  }
+
+  return { success: false };
+};
+
+export default function LogsPage() {
+  const { logs, total, stats, currentPage, totalPages } =
+    useLoaderData<typeof loader>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const submit = useSubmit();
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+
+  const statusFilter = searchParams.get("status") || "";
+  const eventTypeFilter = searchParams.get("eventType") || "";
+
+  const updateFilter = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams);
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+      params.delete("page");
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const goToPage = useCallback(
+    (page: number) => {
+      const params = new URLSearchParams(searchParams);
+      params.set("page", String(page));
+      setSearchParams(params);
+    },
+    [searchParams, setSearchParams],
+  );
+
+  const handleClearLogs = useCallback(() => {
+    const formData = new FormData();
+    formData.set("intent", "clear_logs");
+    submit(formData, { method: "post" });
+    setClearModalOpen(false);
+  }, [submit]);
+
+  const statusBadgeTone = (status: string) => {
+    switch (status) {
+      case "sent":
+        return "success";
+      case "failed":
+        return "critical";
+      case "test":
+        return "info";
+      case "skipped":
+        return "caution";
+      default:
+        return "auto";
+    }
+  };
+
+  return (
+    <s-page heading="SMS Logs">
+      {/* Summary cards */}
+      <s-section heading="This Month">
+        <s-grid gridTemplateColumns="1fr 1fr 1fr">
+          <s-grid-item>
+            <s-box padding="base">
+              <strong>Total SMS</strong>
+              <s-paragraph>
+                <s-text>
+                  {stats.totalSent + stats.totalFailed}
+                </s-text>
+              </s-paragraph>
+            </s-box>
+          </s-grid-item>
+          <s-grid-item>
+            <s-box padding="base">
+              <strong>Credits Used</strong>
+              <s-paragraph>
+                <s-text>
+                  {stats.totalCredits}
+                </s-text>
+              </s-paragraph>
+            </s-box>
+          </s-grid-item>
+          <s-grid-item>
+            <s-box padding="base">
+              <strong>Success Rate</strong>
+              <s-paragraph>
+                <s-text>
+                  {stats.successRate}%
+                </s-text>
+              </s-paragraph>
+            </s-box>
+          </s-grid-item>
+        </s-grid>
+      </s-section>
+
+      {/* Filters and actions */}
+      <s-section heading="Filters">
+        <s-grid gridTemplateColumns="1fr 1fr 1fr">
+          <s-grid-item>
+            <s-select
+              label="Status"
+              value={statusFilter}
+              onChange={(e: Event) => {
+                const target = e.target as HTMLSelectElement;
+                updateFilter("status", target.value);
+              }}
+            >
+              <s-option value="">All Statuses</s-option>
+              <s-option value="sent">Sent</s-option>
+              <s-option value="failed">Failed</s-option>
+              <s-option value="test">Test</s-option>
+              <s-option value="skipped">Skipped</s-option>
+            </s-select>
+          </s-grid-item>
+          <s-grid-item>
+            <s-select
+              label="Event Type"
+              value={eventTypeFilter}
+              onChange={(e: Event) => {
+                const target = e.target as HTMLSelectElement;
+                updateFilter("eventType", target.value);
+              }}
+            >
+              <s-option value="">All Events</s-option>
+              <s-option value="order_created">Order Created</s-option>
+              <s-option value="order_paid">Order Paid</s-option>
+              <s-option value="order_fulfilled">Order Fulfilled</s-option>
+              <s-option value="order_cancelled">Order Cancelled</s-option>
+              <s-option value="order_partially_fulfilled">
+                Partially Fulfilled
+              </s-option>
+              <s-option value="fulfillment_created">
+                Fulfillment Created
+              </s-option>
+              <s-option value="fulfillment_updated">
+                Fulfillment Updated
+              </s-option>
+              <s-option value="customer_created">Customer Created</s-option>
+            </s-select>
+          </s-grid-item>
+          <s-grid-item>
+            <s-box padding="base">
+              <s-button
+                variant="primary"
+                tone="critical"
+                onClick={() => setClearModalOpen(true)}
+                disabled={logs.length === 0}
+              >
+                Clear All Logs
+              </s-button>
+            </s-box>
+          </s-grid-item>
+        </s-grid>
+      </s-section>
+
+      {/* Logs table */}
+      <s-section heading={`Logs (${total} total)`} padding="none">
+        {logs.length === 0 ? (
+          <s-box padding="base">
+            <s-paragraph>
+              No SMS logs found. Logs will appear here once notifications are
+              sent.
+            </s-paragraph>
+          </s-box>
+        ) : (
+          <s-table
+            paginate
+            hasNextPage={currentPage < totalPages}
+            hasPreviousPage={currentPage > 1}
+            onNextPage={() => goToPage(currentPage + 1)}
+            onPreviousPage={() => goToPage(currentPage - 1)}
+          >
+            <s-table-header-row>
+              <s-table-header listSlot="kicker">Date</s-table-header>
+              <s-table-header listSlot="primary">Event</s-table-header>
+              <s-table-header listSlot="secondary">Phone</s-table-header>
+              <s-table-header listSlot="labeled">Status</s-table-header>
+              <s-table-header listSlot="labeled" format="numeric">
+                Credits
+              </s-table-header>
+              <s-table-header listSlot="labeled">Sender ID</s-table-header>
+            </s-table-header-row>
+            <s-table-body>
+              {logs.map((log) => (
+                <s-table-row key={log.id}>
+                  <s-table-cell>
+                    {new Date(log.createdAt).toLocaleString()}
+                  </s-table-cell>
+                  <s-table-cell>{log.eventType}</s-table-cell>
+                  <s-table-cell>{log.phoneMasked}</s-table-cell>
+                  <s-table-cell>
+                    <s-badge tone={statusBadgeTone(log.status)}>
+                      {log.status}
+                    </s-badge>
+                  </s-table-cell>
+                  <s-table-cell>{log.pointsCharged}</s-table-cell>
+                  <s-table-cell>{log.senderId}</s-table-cell>
+                </s-table-row>
+              ))}
+            </s-table-body>
+          </s-table>
+        )}
+      </s-section>
+
+      {/* Clear confirmation modal */}
+      {clearModalOpen && (
+        <s-modal
+          heading="Clear All Logs"
+          onHide={() => setClearModalOpen(false)}
+        >
+          <s-paragraph>
+            Are you sure you want to delete all SMS logs? This action cannot be
+            undone.
+          </s-paragraph>
+          {/* @ts-expect-error Shopify web component slot values */}
+          <s-button slot="primaryAction" tone="critical" onClick={handleClearLogs}>
+            Delete All Logs
+          </s-button>
+          <s-button
+            slot={"secondaryAction" as "secondaryaction"}
+            onClick={() => setClearModalOpen(false)}
+          >
+            Cancel
+          </s-button>
+        </s-modal>
+      )}
+    </s-page>
+  );
+}
