@@ -1,13 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
-// enough when changing adapters.
-// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
   provider = "sqlite"
   url      = "file:dev.sqlite"
@@ -31,4 +25,70 @@ model Session {
   emailVerified Boolean?  @default(false)
   refreshToken        String?
   refreshTokenExpires DateTime?
+}
+
+model GatewayCredentials {
+  id                  Int       @id @default(autoincrement())
+  shop                String    @unique
+  username            String
+  password            String
+  senderId            String    @default("")
+  testMode            Boolean   @default(true)
+  senderIds           String    @default("[]")
+  coverage            String    @default("[]")
+  balanceAvailable    Float     @default(0)
+  balancePurchased    Float     @default(0)
+  balanceUpdatedAt    DateTime?
+  credentialsVerified Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model Settings {
+  id        Int      @id @default(autoincrement())
+  shop      String
+  key       String
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([shop, key])
+  @@index([shop])
+}
+
+model SmsTemplate {
+  id            Int      @id @default(autoincrement())
+  shop          String
+  eventType     String
+  enabled       Boolean  @default(true)
+  templateEn    String
+  templateAr    String
+  recipientType String   @default("customer")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([shop, eventType])
+  @@index([shop])
+}
+
+model SmsLog {
+  id               Int      @id @default(autoincrement())
+  shop             String
+  eventType        String
+  phone            String
+  message          String
+  senderId         String
+  status           String
+  msgId            String?
+  pointsCharged    Int      @default(0)
+  balanceAfter     Float?
+  errorCode        String?
+  errorDescription String?
+  apiResponse      String?
+  testMode         Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([shop])
+  @@index([createdAt])
+  @@index([shop, eventType])
 }
