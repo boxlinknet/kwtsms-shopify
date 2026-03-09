@@ -15,6 +15,7 @@ import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { authenticate } from "../shopify.server";
 import { initDefaults } from "../lib/db/settings";
 import { seedDefaultTemplates } from "../lib/db/templates";
+import { syncShopIfStale } from "../lib/jobs/sync";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -22,6 +23,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Seed defaults on first visit (handles fresh installs and reinstalls)
   await initDefaults(session.shop);
   await seedDefaultTemplates(session.shop);
+
+  // Sync balance/senderIds/coverage if stale (>24h), runs in background
+  syncShopIfStale(session.shop);
 
   // eslint-disable-next-line no-undef
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
