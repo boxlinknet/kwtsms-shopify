@@ -1,0 +1,66 @@
+# Claude / AI
+.claude/
+CLAUDE.md
+.worktrees/
+
+# Documentation (generated, not tracked)
+docs/
+tests/
+
+# Docker
+docker/
+
+# Environment
+.env
+.env.*
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build
+build/
+dist/
+.cache/
+
+# Prisma
+prisma/dev.sqlite
+prisma/dev.sqlite-journal
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lock files
+Gemfile.lock
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Archives
+*.zip
+*.tar.gz
+
+# Secrets
+credentials.json
+*.pem
+*.key
+
+# Shopify
+.shopify/
