@@ -169,14 +169,13 @@ export default function GatewaySettings() {
 
   return (
     <s-page heading="Gateway Settings">
-      {actionData?.ok && actionData.message && (
-        <s-banner tone="success">{actionData.message}</s-banner>
-      )}
-      {actionData && !actionData.ok && actionData.error && (
-        <s-banner tone="critical">{actionData.error}</s-banner>
-      )}
-
       <s-section heading="API Credentials">
+        {actionData?.intent === "verify" && actionData.ok && (
+          <s-banner tone="success">{actionData.message}</s-banner>
+        )}
+        {actionData?.intent === "verify" && !actionData.ok && (
+          <s-banner tone="critical">{actionData.error}</s-banner>
+        )}
         <Form method="post">
           <input type="hidden" name="intent" value="verify" />
           <s-text-field
@@ -192,6 +191,12 @@ export default function GatewaySettings() {
             value={password}
             onInput={(e: Event) => setPassword((e.target as HTMLInputElement).value)}
             autocomplete="off"
+            {...{ type: "password" } as Record<string, string>}
+          />
+          <s-checkbox
+            label="Test mode (SMS will not be delivered)"
+            checked={testMode || undefined}
+            onChange={(e: Event) => setTestMode((e.target as HTMLInputElement).checked)}
           />
           <br />
           <s-button variant="primary" type="submit">Verify Credentials</s-button>
@@ -201,6 +206,12 @@ export default function GatewaySettings() {
       {credentialsVerified && (
         <>
           <s-section heading="Sender Settings">
+            {actionData?.intent === "save_sender" && actionData.ok && (
+              <s-banner tone="success">{actionData.message}</s-banner>
+            )}
+            {actionData?.intent === "save_sender" && !actionData.ok && (
+              <s-banner tone="critical">{actionData.error}</s-banner>
+            )}
             <Form method="post">
               <input type="hidden" name="intent" value="save_sender" />
               <input type="hidden" name="testMode" value={testMode ? "true" : "false"} />
@@ -212,23 +223,24 @@ export default function GatewaySettings() {
                   onChange={(e: Event) => setSenderId((e.target as HTMLSelectElement).value)}
                 >
                   {senderIds.map((id) => (
-                    <option key={id} value={id}>{id}</option>
+                    <s-option key={id} value={id}>{id}</s-option>
                   ))}
                 </s-select>
               ) : (
                 <s-text>No sender IDs available. Contact kwtSMS to register a sender ID.</s-text>
               )}
-              <s-checkbox
-                label="Test mode (SMS will not be delivered)"
-                checked={testMode || undefined}
-                onChange={(e: Event) => setTestMode((e.target as HTMLInputElement).checked)}
-              />
               <br />
               <s-button variant="primary" type="submit">Save Settings</s-button>
             </Form>
           </s-section>
 
           <s-section heading="Account Balance">
+            {actionData?.intent === "refresh_balance" && actionData.ok && (
+              <s-banner tone="success">{actionData.message}</s-banner>
+            )}
+            {actionData?.intent === "refresh_balance" && !actionData.ok && (
+              <s-banner tone="critical">{actionData.error}</s-banner>
+            )}
             <s-paragraph>
               <strong>Available:</strong> {balanceAvailable.toFixed(2)} credits
             </s-paragraph>
@@ -265,6 +277,12 @@ export default function GatewaySettings() {
           )}
 
           <s-section heading="Test SMS">
+            {actionData?.intent === "send_test" && actionData.ok && (
+              <s-banner tone="success">{actionData.message}</s-banner>
+            )}
+            {actionData?.intent === "send_test" && !actionData.ok && (
+              <s-banner tone="critical">{actionData.error}</s-banner>
+            )}
             <Form method="post">
               <input type="hidden" name="intent" value="send_test" />
               <s-text-field

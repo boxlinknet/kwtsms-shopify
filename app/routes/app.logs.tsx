@@ -165,15 +165,9 @@ export default function LogsPage() {
               <s-option value="order_paid">Order Paid</s-option>
               <s-option value="order_fulfilled">Order Fulfilled</s-option>
               <s-option value="order_cancelled">Order Cancelled</s-option>
-              <s-option value="order_partially_fulfilled">
-                Partially Fulfilled
-              </s-option>
-              <s-option value="fulfillment_created">
-                Fulfillment Created
-              </s-option>
-              <s-option value="fulfillment_updated">
-                Fulfillment Updated
-              </s-option>
+              <s-option value="order_partially_fulfilled">Partially Fulfilled</s-option>
+              <s-option value="fulfillment_created">Fulfillment Created</s-option>
+              <s-option value="fulfillment_updated">Fulfillment Updated</s-option>
               <s-option value="customer_created">Customer Created</s-option>
             </s-select>
           </s-grid-item>

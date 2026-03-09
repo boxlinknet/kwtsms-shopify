@@ -1,63 +1,72 @@
-# This file stores configurations for your Shopify app.
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-scopes = "read_orders,read_customers,read_inventory,read_fulfillments,read_products"
+client_id = "aa2047f12d6680b16906e1a163416dc9"
+name = "kwtsms"
+application_url = "https://example.com"
+embedded = true
+
+[build]
+automatically_update_urls_on_dev = true
+include_config_on_deploy = true
 
 [webhooks]
-api_version = "2025-10"
+api_version = "2026-04"
 
-  # App lifecycle
   [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
   uri = "/webhooks/app/uninstalled"
-  topics = ["app/uninstalled"]
 
   [[webhooks.subscriptions]]
-  topics = ["app/scopes_update"]
+  topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
-  # Order events
   [[webhooks.subscriptions]]
-  topics = ["orders/create"]
+  topics = [ "orders/create" ]
   uri = "/webhooks/orders/create"
 
   [[webhooks.subscriptions]]
-  topics = ["orders/paid"]
+  topics = [ "orders/paid" ]
   uri = "/webhooks/orders/paid"
 
   [[webhooks.subscriptions]]
-  topics = ["orders/fulfilled"]
+  topics = [ "orders/fulfilled" ]
   uri = "/webhooks/orders/fulfilled"
 
   [[webhooks.subscriptions]]
-  topics = ["orders/partially_fulfilled"]
+  topics = [ "orders/partially_fulfilled" ]
   uri = "/webhooks/orders/partially-fulfilled"
 
   [[webhooks.subscriptions]]
-  topics = ["orders/cancelled"]
+  topics = [ "orders/cancelled" ]
   uri = "/webhooks/orders/cancelled"
 
-  # Fulfillment events
   [[webhooks.subscriptions]]
-  topics = ["fulfillments/create"]
+  topics = [ "fulfillments/create" ]
   uri = "/webhooks/fulfillments/create"
 
   [[webhooks.subscriptions]]
-  topics = ["fulfillments/update"]
+  topics = [ "fulfillments/update" ]
   uri = "/webhooks/fulfillments/update"
 
-  # Customer events
   [[webhooks.subscriptions]]
-  topics = ["customers/create"]
+  topics = [ "customers/create" ]
   uri = "/webhooks/customers/create"
 
-  # Mandatory compliance webhooks (public apps)
   [[webhooks.subscriptions]]
   uri = "/webhooks/customers/data-request"
-  compliance_topics = ["customers/data_request"]
+  compliance_topics = [ "customers/data_request" ]
 
   [[webhooks.subscriptions]]
   uri = "/webhooks/customers/redact"
-  compliance_topics = ["customers/redact"]
+  compliance_topics = [ "customers/redact" ]
 
   [[webhooks.subscriptions]]
   uri = "/webhooks/shop/redact"
-  compliance_topics = ["shop/redact"]
+  compliance_topics = [ "shop/redact" ]
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_customers,read_fulfillments,read_inventory,read_orders,read_products"
+
+[auth]
+redirect_urls = [ "https://example.com/api/auth" ]

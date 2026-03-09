@@ -189,7 +189,7 @@ function TemplateCard({
           }
         >
           {RECIPIENT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <s-option key={opt.value} value={opt.value}>{opt.label}</s-option>
           ))}
         </s-select>
       </s-stack>
