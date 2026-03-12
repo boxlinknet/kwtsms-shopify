@@ -34,7 +34,7 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   notify_order_created: "true",
   notify_order_paid: "true",
   notify_order_shipped: "true",
-  notify_order_partially_shipped: "true",
+  notify_order_partially_fulfilled: "true",
   notify_order_cancelled: "true",
   notify_customer_created: "false",
   notify_low_stock: "false",

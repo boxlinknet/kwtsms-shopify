@@ -5,6 +5,7 @@ interface OrderPayload {
   order_number?: number;
   total_price?: string;
   currency?: string;
+  customer_locale?: string;
   line_items?: Array<unknown>;
   cancel_reason?: string;
   payment_gateway_names?: string[];
@@ -12,6 +13,7 @@ interface OrderPayload {
     first_name?: string;
     last_name?: string;
     phone?: string;
+    locale?: string;
   };
   shipping_address?: {
     phone?: string;
@@ -41,6 +43,10 @@ function getCustomerName(payload: OrderPayload): string {
   return `${first} ${last}`.trim() || "Customer";
 }
 
+function getCustomerLocale(payload: OrderPayload): string | undefined {
+  return payload.customer_locale ?? payload.customer?.locale;
+}
+
 function getShopName(shop: string): string {
   return shop.replace(".myshopify.com", "");
 }
@@ -59,6 +65,7 @@ export async function handleOrderCreated(
     shop,
     eventType: "order_created",
     phone,
+    locale: getCustomerLocale(payload),
     templateData: {
       order_number: payload.name ?? `#${payload.order_number ?? ""}`,
       customer_name: getCustomerName(payload),
@@ -83,6 +90,7 @@ export async function handleOrderPaid(
     shop,
     eventType: "order_paid",
     phone,
+    locale: getCustomerLocale(payload),
     templateData: {
       order_number: payload.name ?? `#${payload.order_number ?? ""}`,
       customer_name: getCustomerName(payload),
@@ -109,6 +117,7 @@ export async function handleOrderFulfilled(
     shop,
     eventType: "order_shipped",
     phone,
+    locale: getCustomerLocale(payload),
     templateData: {
       order_number: payload.name ?? `#${payload.order_number ?? ""}`,
       customer_name: getCustomerName(payload),
@@ -135,6 +144,7 @@ export async function handleOrderPartiallyFulfilled(
     shop,
     eventType: "order_partially_fulfilled",
     phone,
+    locale: getCustomerLocale(payload),
     templateData: {
       order_number: payload.name ?? `#${payload.order_number ?? ""}`,
       customer_name: getCustomerName(payload),
@@ -157,6 +167,7 @@ export async function handleOrderCancelled(
     shop,
     eventType: "order_cancelled",
     phone,
+    locale: getCustomerLocale(payload),
     templateData: {
       order_number: payload.name ?? `#${payload.order_number ?? ""}`,
       customer_name: getCustomerName(payload),

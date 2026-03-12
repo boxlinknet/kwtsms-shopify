@@ -13,6 +13,7 @@ interface FulfillmentPayload {
     first_name?: string;
     last_name?: string;
   };
+  // Shopify does not include locale on fulfillment payloads
 }
 
 export async function handleFulfillmentCreated(

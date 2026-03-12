@@ -12,7 +12,7 @@ export async function saveCredentials(
     senderId?: string;
     testMode?: boolean;
     senderIds?: string[];
-    coverage?: Array<{ prefix: string; country: string; rate: number }>;
+    coverage?: string[];
     balanceAvailable?: number;
     balancePurchased?: number;
     credentialsVerified?: boolean;

@@ -17,10 +17,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const settings = await getSettings(shop);
   const creds = await getCredentials(shop);
   const stats = await getLogStats(shop);
+  const coverage: string[] = creds?.coverage ? JSON.parse(creds.coverage as string) : [];
 
   return {
     shop,
     settings,
+    coverage,
     balanceAvailable: creds?.balanceAvailable ?? 0,
     credentialsVerified: creds?.credentialsVerified ?? false,
     totalSent: stats.totalSent,
@@ -36,7 +38,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     "notify_order_created",
     "notify_order_paid",
     "notify_order_shipped",
-    "notify_order_partially_shipped",
+    "notify_order_partially_fulfilled",
     "notify_order_cancelled",
     "test_mode",
     "debug_logging",
@@ -57,7 +59,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function SettingsPage() {
-  const { shop, settings, balanceAvailable, credentialsVerified, totalSent } =
+  const { shop, settings, coverage, balanceAvailable, credentialsVerified, totalSent } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
@@ -65,8 +67,8 @@ export default function SettingsPage() {
   const [orderCreated, setOrderCreated] = useState(settings.notify_order_created !== "false");
   const [orderPaid, setOrderPaid] = useState(settings.notify_order_paid !== "false");
   const [orderShipped, setOrderShipped] = useState(settings.notify_order_shipped !== "false");
-  const [orderPartiallyShipped, setOrderPartiallyShipped] = useState(
-    settings.notify_order_partially_shipped !== "false",
+  const [orderPartiallyFulfilled, setOrderPartiallyFulfilled] = useState(
+    settings.notify_order_partially_fulfilled !== "false",
   );
   const [orderCancelled, setOrderCancelled] = useState(settings.notify_order_cancelled !== "false");
   const [adminPhone, setAdminPhone] = useState(settings.admin_phone ?? "");
@@ -111,18 +113,19 @@ export default function SettingsPage() {
         </s-banner>
       )}
 
-      <Form method="post" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <Form method="post">
         {smsEnabled && <input type="hidden" name="sms_enabled" value="1" />}
         {orderCreated && <input type="hidden" name="notify_order_created" value="1" />}
         {orderPaid && <input type="hidden" name="notify_order_paid" value="1" />}
         {orderShipped && <input type="hidden" name="notify_order_shipped" value="1" />}
-        {orderPartiallyShipped && (
-          <input type="hidden" name="notify_order_partially_shipped" value="1" />
+        {orderPartiallyFulfilled && (
+          <input type="hidden" name="notify_order_partially_fulfilled" value="1" />
         )}
         {orderCancelled && <input type="hidden" name="notify_order_cancelled" value="1" />}
         {testMode && <input type="hidden" name="test_mode" value="1" />}
         {debugLogging && <input type="hidden" name="debug_logging" value="1" />}
 
+        <div style={{ marginTop: "16px" }} />
         <s-section heading="Global SMS Toggle">
           <s-checkbox
             label="Enable SMS notifications"
@@ -134,6 +137,7 @@ export default function SettingsPage() {
           </s-paragraph>
         </s-section>
 
+        <div style={{ marginTop: "16px" }} />
         <s-section heading="Notification Events">
           <s-paragraph>
             Choose which order events should trigger SMS notifications.
@@ -154,9 +158,9 @@ export default function SettingsPage() {
             onChange={() => setOrderShipped(!orderShipped)}
           />
           <s-checkbox
-            label="Order Partially Shipped"
-            checked={orderPartiallyShipped || undefined}
-            onChange={() => setOrderPartiallyShipped(!orderPartiallyShipped)}
+            label="Order Partially Fulfilled"
+            checked={orderPartiallyFulfilled || undefined}
+            onChange={() => setOrderPartiallyFulfilled(!orderPartiallyFulfilled)}
           />
           <s-checkbox
             label="Order Cancelled"
@@ -165,6 +169,7 @@ export default function SettingsPage() {
           />
         </s-section>
 
+        <div style={{ marginTop: "16px" }} />
         <s-section heading="Admin Notifications">
           <s-text-field
             label="Admin phone number"
@@ -174,15 +179,29 @@ export default function SettingsPage() {
           />
         </s-section>
 
+        <div style={{ marginTop: "16px" }} />
         <s-section heading="Defaults">
-          <s-text-field
-            label="Default country code"
-            name="default_country_code"
-            value={countryCode}
-            onInput={(e: Event) => setCountryCode((e.target as HTMLInputElement).value)}
-          />
+          {coverage.length > 0 ? (
+            <s-select
+              label="Default country code"
+              name="default_country_code"
+              value={countryCode}
+              onChange={(e: Event) => setCountryCode((e.target as HTMLSelectElement).value)}
+            >
+              {coverage.map((prefix: string) => (
+                <s-option key={prefix} value={prefix}>+{prefix}</s-option>
+              ))}
+            </s-select>
+          ) : (
+            <s-text-field
+              label="Default country code"
+              name="default_country_code"
+              value={countryCode}
+              onInput={(e: Event) => setCountryCode((e.target as HTMLInputElement).value)}
+            />
+          )}
           <s-select
-            label="Default language"
+            label="Fallback language"
             name="default_language"
             value={language}
             onChange={(e: Event) => setLanguage((e.target as HTMLSelectElement).value)}
@@ -192,6 +211,7 @@ export default function SettingsPage() {
           </s-select>
         </s-section>
 
+        <div style={{ marginTop: "16px" }} />
         <s-section heading="Developer Options">
           <s-checkbox
             label="Test mode"
@@ -211,6 +231,7 @@ export default function SettingsPage() {
           </s-paragraph>
         </s-section>
 
+        <div style={{ marginTop: "16px" }} />
         <s-section>
           <s-button variant="primary" type="submit">
             Save Settings

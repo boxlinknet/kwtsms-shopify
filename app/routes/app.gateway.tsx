@@ -10,7 +10,7 @@ interface LoaderData {
   senderId: string;
   testMode: boolean;
   senderIds: string[];
-  coverage: Array<{ prefix: string; country: string; rate: number }>;
+  coverage: string[];
   balanceAvailable: number;
   balancePurchased: number;
   credentialsVerified: boolean;
@@ -23,7 +23,7 @@ interface ActionData {
   error?: string;
   balance?: { available: number; purchased: number };
   senderIds?: string[];
-  coverage?: Array<{ prefix: string; country: string; rate: number }>;
+  coverage?: string[];
   credentialsVerified?: boolean;
   senderId?: string;
   testResult?: { msgId: string; numbers: number; pointsCharged: number };
@@ -69,7 +69,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const senderIds = senderResult.ok ? senderResult.data.senderid : [];
 
     const coverageResult = await client.coverage();
-    const coverage = coverageResult.ok ? coverageResult.data.coverage : [];
+    const coverage = coverageResult.ok ? coverageResult.data.prefixes : [];
 
     await saveCredentials(shop, {
       username, password, senderIds, coverage,
@@ -255,24 +255,9 @@ export default function GatewaySettings() {
 
           {coverage.length > 0 && (
             <s-section heading="Coverage">
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    <th style={{ textAlign: "left", padding: "4px 8px" }}>Country</th>
-                    <th style={{ textAlign: "left", padding: "4px 8px" }}>Prefix</th>
-                    <th style={{ textAlign: "right", padding: "4px 8px" }}>Rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {coverage.map((c: { prefix: string; country: string; rate: number }) => (
-                    <tr key={c.prefix}>
-                      <td style={{ padding: "4px 8px" }}>{c.country}</td>
-                      <td style={{ padding: "4px 8px" }}>+{c.prefix}</td>
-                      <td style={{ textAlign: "right", padding: "4px 8px" }}>{c.rate}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <s-paragraph>
+                Active country prefixes: {coverage.map((p: string) => `+${p}`).join(", ")}
+              </s-paragraph>
             </s-section>
           )}
 

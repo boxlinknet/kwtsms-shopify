@@ -63,10 +63,10 @@ export async function sendSms(params: {
   }
 
   // Check coverage
-  const coverage = JSON.parse(creds.coverage) as Array<{ prefix: string }>;
+  const coverage = JSON.parse(creds.coverage) as string[];
   if (coverage.length > 0) {
-    const hasRoute = coverage.some((c) =>
-      phoneResult.normalized.startsWith(c.prefix),
+    const hasRoute = coverage.some((prefix) =>
+      phoneResult.normalized.startsWith(prefix),
     );
     if (!hasRoute) {
       await createLog({
@@ -154,9 +154,10 @@ export async function sendNotification(params: {
   shop: string;
   eventType: string;
   phone: string;
+  locale?: string;
   templateData: TemplateData;
 }): Promise<SendResult> {
-  const { shop, eventType, phone, templateData } = params;
+  const { shop, eventType, phone, locale, templateData } = params;
 
   // Check if SMS is enabled globally
   const smsEnabled = await getSetting(shop, "sms_enabled");
@@ -177,13 +178,35 @@ export async function sendNotification(params: {
     return { success: false, error: `No active template for ${eventType}` };
   }
 
-  // Get language preference
-  const language = (await getSetting(shop, "default_language")) ?? "en";
+  // Use customer locale if available, fall back to shop default
+  const defaultLanguage = (await getSetting(shop, "default_language")) ?? "en";
+  const language = locale?.startsWith("ar") ? "ar" : locale ? "en" : defaultLanguage;
   const templateText =
     language === "ar" ? template.templateAr : template.templateEn;
 
   // Render template
   const message = renderTemplate(templateText, templateData);
 
-  return sendSms({ shop, phone, message, eventType });
+  const recipientType = template.recipientType ?? "customer";
+  const results: SendResult[] = [];
+
+  // Send to customer
+  if (recipientType === "customer" || recipientType === "both") {
+    results.push(await sendSms({ shop, phone, message, eventType }));
+  }
+
+  // Send to admin
+  if (recipientType === "admin" || recipientType === "both") {
+    const adminPhone = await getSetting(shop, "admin_phone");
+    if (adminPhone) {
+      results.push(await sendSms({ shop, phone: adminPhone, message, eventType }));
+    } else {
+      console.warn(`[sendNotification] recipientType=${recipientType} but no admin_phone configured for ${shop}`);
+    }
+  }
+
+  // Return first failure or last success
+  const failed = results.find((r) => !r.success);
+  if (failed) return failed;
+  return results[results.length - 1] ?? { success: false, error: "No recipients" };
 }

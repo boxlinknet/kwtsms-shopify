@@ -43,11 +43,7 @@ export interface StatusResponse {
 }
 
 export interface CoverageResponse {
-  coverage: Array<{
-    prefix: string;
-    country: string;
-    rate: number;
-  }>;
+  prefixes: string[];
 }
 
 export interface KwtSmsError {

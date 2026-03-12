@@ -46,7 +46,7 @@ async function syncShop(
   }
 
   if (coverageResult.ok) {
-    update.coverage = coverageResult.data.coverage;
+    update.coverage = coverageResult.data.prefixes;
   }
 
   if (Object.keys(update).length > 0) {
