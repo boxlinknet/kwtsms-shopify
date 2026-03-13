@@ -4,6 +4,7 @@ interface CustomerPayload {
   phone?: string;
   first_name?: string;
   last_name?: string;
+  locale?: string;
 }
 
 export async function handleCustomerCreated(
@@ -23,6 +24,7 @@ export async function handleCustomerCreated(
     shop,
     eventType: "customer_created",
     phone,
+    locale: payload.locale,
     templateData: {
       customer_name: customerName,
       shop_name: shop.replace(".myshopify.com", ""),

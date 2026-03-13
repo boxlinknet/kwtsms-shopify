@@ -9,8 +9,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 export default function IntegrationsPage() {
   return (
     <s-page heading="Integrations">
+      <div style={{ marginTop: "16px" }} />
       {/* Active integrations */}
-      <s-section heading="Active">
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Active</h2>
         <s-box padding="base" border="base" borderRadius="base">
           <s-grid gridTemplateColumns="1fr auto" alignItems="center">
             <s-grid-item>
@@ -29,7 +31,8 @@ export default function IntegrationsPage() {
       </s-section>
 
       {/* Coming Soon integrations */}
-      <s-section heading="Coming Soon">
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coming Soon</h2>
         <s-grid gridTemplateColumns="1fr 1fr" gap="base">
           <s-grid-item>
             <s-box padding="base" border="base" borderRadius="base">

@@ -11,7 +11,7 @@ If you discover a security vulnerability, please report it responsibly:
 
 ### Credentials
 
-- API credentials are stored encrypted in the app database, never in source code
+- API credentials are stored in the app database, never in source code
 - Credentials are transmitted only over HTTPS POST requests
 - Credentials are never logged, cached in browser storage, or exposed to the frontend
 - OAuth tokens are managed by Shopify's session management
@@ -32,15 +32,8 @@ If you discover a security vulnerability, please report it responsibly:
 
 ### Rate Limiting
 
-- OTP requests are rate-limited per phone number and IP address
 - API calls respect kwtSMS rate limits (max 2 requests/second)
-- Bulk sending includes configurable delays between batches
-
-### Anti-Abuse
-
-- CAPTCHA support (Cloudflare Turnstile, Google reCAPTCHA) for public-facing OTP forms
-- VPN/proxy detection capability for abuse prevention
-- Configurable phone number blocklist
+- Balance and coverage checks run before every send attempt
 
 ## Supported Versions
 

@@ -7,25 +7,23 @@ import type {
 import { Form, useActionData, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { getSettings, setSetting } from "../lib/db/settings";
-import { getCredentials } from "../lib/db/credentials";
-import { getLogStats } from "../lib/db/logs";
+import { getCredentials, saveCredentials } from "../lib/db/credentials";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { COUNTRY_NAMES } from "../lib/kwtsms";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
   const settings = await getSettings(shop);
   const creds = await getCredentials(shop);
-  const stats = await getLogStats(shop);
   const coverage: string[] = creds?.coverage ? JSON.parse(creds.coverage as string) : [];
 
   return {
     shop,
     settings,
     coverage,
-    balanceAvailable: creds?.balanceAvailable ?? 0,
     credentialsVerified: creds?.credentialsVerified ?? false,
-    totalSent: stats.totalSent,
+    testMode: creds?.testMode ?? true,
   };
 };
 
@@ -40,7 +38,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     "notify_order_shipped",
     "notify_order_partially_fulfilled",
     "notify_order_cancelled",
-    "test_mode",
+    "notify_customer_created",
     "debug_logging",
   ];
 
@@ -55,15 +53,19 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     await setSetting(session.shop, key, value);
   }
 
+  const testMode = formData.has("test_mode");
+  await saveCredentials(session.shop, { testMode });
+
   return { success: true };
 };
 
 export default function SettingsPage() {
-  const { shop, settings, coverage, balanceAvailable, credentialsVerified, totalSent } =
+  const { shop, settings, coverage, credentialsVerified, testMode: loaderTestMode } =
     useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
 
   const [smsEnabled, setSmsEnabled] = useState(settings.sms_enabled !== "false");
+  const [testMode, setTestMode] = useState(loaderTestMode);
   const [orderCreated, setOrderCreated] = useState(settings.notify_order_created !== "false");
   const [orderPaid, setOrderPaid] = useState(settings.notify_order_paid !== "false");
   const [orderShipped, setOrderShipped] = useState(settings.notify_order_shipped !== "false");
@@ -71,19 +73,27 @@ export default function SettingsPage() {
     settings.notify_order_partially_fulfilled !== "false",
   );
   const [orderCancelled, setOrderCancelled] = useState(settings.notify_order_cancelled !== "false");
+  const [customerCreated, setCustomerCreated] = useState(settings.notify_customer_created === "true");
   const [adminPhone, setAdminPhone] = useState(settings.admin_phone ?? "");
   const [countryCode, setCountryCode] = useState(settings.default_country_code ?? "965");
   const [language, setLanguage] = useState(settings.default_language ?? "en");
-  const [testMode, setTestMode] = useState(settings.test_mode !== "false");
   const [debugLogging, setDebugLogging] = useState(settings.debug_logging === "true");
 
   return (
     <s-page heading="kwtSMS Settings">
-      <s-section heading="Welcome to kwtSMS">
+      <div style={{ marginTop: "16px" }} />
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Welcome to kwtSMS</h2>
         <s-paragraph>
-          kwtSMS lets you send automated SMS notifications to your customers
-          through the kwtSMS gateway. Order confirmations, shipping updates, and
-          more can all be sent directly to your customers' phones.
+          kwtSMS is a Kuwait-based SMS gateway trusted by businesses to deliver
+          messages across Kuwait (Zain, Ooredoo, STC, Virgin) and internationally.
+          It offers private Sender IDs, free API testing, non-expiring credits,
+          and competitive flat-rate pricing. Open a free account in under one
+          minute at{" "}
+          <s-link href="https://www.kwtsms.com/signup" target="_blank">
+            kwtsms.com
+          </s-link>
+          , no paperwork or payment required.
         </s-paragraph>
         <s-paragraph>
           Connected shop: <strong>{shop}</strong>
@@ -97,24 +107,9 @@ export default function SettingsPage() {
         )}
       </s-section>
 
-      <s-section slot="aside" heading="Quick Status">
-        <s-paragraph>
-          <strong>SMS Balance:</strong>{" "}
-          {credentialsVerified ? `${balanceAvailable.toFixed(2)} credits` : "Not configured"}
-        </s-paragraph>
-        <s-paragraph>
-          <strong>Messages Sent:</strong> {totalSent}
-        </s-paragraph>
-      </s-section>
-
-      {actionData?.success && (
-        <s-banner tone="success" dismissible>
-          Settings saved successfully.
-        </s-banner>
-      )}
-
       <Form method="post">
         {smsEnabled && <input type="hidden" name="sms_enabled" value="1" />}
+        {testMode && <input type="hidden" name="test_mode" value="1" />}
         {orderCreated && <input type="hidden" name="notify_order_created" value="1" />}
         {orderPaid && <input type="hidden" name="notify_order_paid" value="1" />}
         {orderShipped && <input type="hidden" name="notify_order_shipped" value="1" />}
@@ -122,11 +117,12 @@ export default function SettingsPage() {
           <input type="hidden" name="notify_order_partially_fulfilled" value="1" />
         )}
         {orderCancelled && <input type="hidden" name="notify_order_cancelled" value="1" />}
-        {testMode && <input type="hidden" name="test_mode" value="1" />}
+        {customerCreated && <input type="hidden" name="notify_customer_created" value="1" />}
         {debugLogging && <input type="hidden" name="debug_logging" value="1" />}
 
         <div style={{ marginTop: "16px" }} />
-        <s-section heading="Global SMS Toggle">
+        <s-section>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Global SMS Toggle</h2>
           <s-checkbox
             label="Enable SMS notifications"
             checked={smsEnabled || undefined}
@@ -135,13 +131,27 @@ export default function SettingsPage() {
           <s-paragraph>
             When disabled, no SMS messages will be sent from this app.
           </s-paragraph>
+          <s-checkbox
+            label="Test mode (SMS will not be delivered)"
+            checked={testMode || undefined}
+            onChange={() => setTestMode(!testMode)}
+          />
+          <s-paragraph>
+            When enabled, SMS messages are queued but not delivered to handsets. No credits are consumed.
+          </s-paragraph>
         </s-section>
 
         <div style={{ marginTop: "16px" }} />
-        <s-section heading="Notification Events">
+        <s-section>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Notification Events</h2>
           <s-paragraph>
             Choose which order events should trigger SMS notifications.
           </s-paragraph>
+          <s-checkbox
+            label="New Customer (Welcome SMS)"
+            checked={customerCreated || undefined}
+            onChange={() => setCustomerCreated(!customerCreated)}
+          />
           <s-checkbox
             label="Order Created"
             checked={orderCreated || undefined}
@@ -170,7 +180,8 @@ export default function SettingsPage() {
         </s-section>
 
         <div style={{ marginTop: "16px" }} />
-        <s-section heading="Admin Notifications">
+        <s-section>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Admin Notifications</h2>
           <s-text-field
             label="Admin phone number"
             name="admin_phone"
@@ -180,7 +191,8 @@ export default function SettingsPage() {
         </s-section>
 
         <div style={{ marginTop: "16px" }} />
-        <s-section heading="Defaults">
+        <s-section>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Defaults</h2>
           {coverage.length > 0 ? (
             <s-select
               label="Default country code"
@@ -189,7 +201,7 @@ export default function SettingsPage() {
               onChange={(e: Event) => setCountryCode((e.target as HTMLSelectElement).value)}
             >
               {coverage.map((prefix: string) => (
-                <s-option key={prefix} value={prefix}>+{prefix}</s-option>
+                <s-option key={prefix} value={prefix}>+{prefix} {COUNTRY_NAMES[prefix] || ""}</s-option>
               ))}
             </s-select>
           ) : (
@@ -212,27 +224,25 @@ export default function SettingsPage() {
         </s-section>
 
         <div style={{ marginTop: "16px" }} />
-        <s-section heading="Developer Options">
-          <s-checkbox
-            label="Test mode"
-            checked={testMode || undefined}
-            onChange={() => setTestMode(!testMode)}
-          />
-          <s-paragraph>
-            When enabled, SMS messages are logged but not actually sent.
-          </s-paragraph>
+        <s-section>
+          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Developer Options</h2>
           <s-checkbox
             label="Debug logging"
             checked={debugLogging || undefined}
             onChange={() => setDebugLogging(!debugLogging)}
           />
           <s-paragraph>
-            When enabled, detailed logs are recorded for troubleshooting.
+            When enabled, detailed SMS logs are printed to the server console for troubleshooting.
           </s-paragraph>
         </s-section>
 
         <div style={{ marginTop: "16px" }} />
         <s-section>
+          {actionData?.success && (
+            <s-banner tone="success" dismissible>
+              Settings saved successfully.
+            </s-banner>
+          )}
           <s-button variant="primary" type="submit">
             Save Settings
           </s-button>

@@ -89,15 +89,24 @@ function formatLog(log: {
   testMode: boolean;
   createdAt: Date;
 }) {
+  const { phone, ...rest } = log;
   return {
-    ...log,
-    phoneMasked: maskPhone(log.phone),
+    ...rest,
+    phoneMasked: maskPhone(phone),
   };
 }
 
 export async function clearLogs(shop: string): Promise<number> {
   const result = await db.smsLog.deleteMany({ where: { shop } });
   return result.count;
+}
+
+export async function getTodaySentCount(shop: string): Promise<number> {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return db.smsLog.count({
+    where: { shop, status: "sent", createdAt: { gte: todayStart } },
+  });
 }
 
 export async function getLogStats(shop: string): Promise<LogStats> {

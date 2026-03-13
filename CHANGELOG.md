@@ -8,8 +8,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Initial project scaffolding
-- Product Requirements Document (PRD)
-- Implementation plan
+- Initial project scaffolding from Shopify React Router template
+- Prisma database schema (GatewayCredentials, Settings, SmsTemplate, SmsLog)
+- kwtSMS API client with full error code mapping (ERR001-ERR033)
+- Phone normalization (Arabic/Hindi digits, stripping, country code prepending)
+- Message cleaning (emoji strip, HTML strip, control char removal, Arabic preserved)
+- SMS send orchestration via `sendSms()` with balance and coverage guards
+- Gateway settings page (login, logout, reload, sender ID, coverage, test SMS)
+- Settings page (SMS toggle, test mode, notification events, defaults, debug logging)
+- Templates page with vertical tabs layout (6 event types, EN/AR, recipient type)
+- Logs page with status/event filters and pagination
+- Help page (setup guide, FAQ, troubleshooting, error codes, useful links)
+- Integrations page (stub for future integrations)
+- Global status bar (SMS status, gateway, mode, balance, sender, today sent, dashboard link)
+- 13 webhook handlers (orders, fulfillments, customers, privacy)
+- Notification handlers for order, fulfillment, customer, and privacy events
+- Default template seeding on install (individual missing template seeding)
+- Daily sync job (lazy, triggered on page load if >24h stale)
+- Debug logging to server console (toggled from settings)
+- Country names map (~180 countries) for coverage and settings display
+- Auto-set first sender ID on gateway login
+- New Customer (Welcome SMS) notification event and template
+- Test SMS with timestamp appended to message
+- Manual test plan documentation
 - Competitive analysis
 - Marketplace submission guide
+- Product Requirements Document (PRD)
+- 18-task implementation plan with Phase 2-4 roadmap
+
+### Removed
+- fulfillment_created template (redundant with order_shipped/order_partially_fulfilled)
+- Dead settings (test_mode, notify_low_stock from settings table)

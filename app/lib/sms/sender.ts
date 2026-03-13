@@ -1,5 +1,4 @@
 import { KwtSmsClient, normalize, cleanMessage, maskPhone } from "../kwtsms";
-import type { Result, SendResponse } from "../kwtsms";
 import { getCredentials } from "../db/credentials";
 import { getSetting } from "../db/settings";
 import { getTemplate } from "../db/templates";
@@ -23,9 +22,16 @@ export async function sendSms(params: {
   testMode?: boolean;
 }): Promise<SendResult> {
   const { shop, phone, message, eventType } = params;
+  const debug = (await getSetting(shop, "debug_logging")) === "true";
+
+  // Get default country code for normalization
+  const defaultCountryCode = (await getSetting(shop, "default_country_code")) ?? "965";
+
+  if (debug) console.log(`[SMS:debug] sendSms called`, { shop, eventType, phone: maskPhone(phone), testMode: params.testMode });
 
   // Normalize phone
-  const phoneResult = normalize(phone);
+  const phoneResult = normalize(phone, defaultCountryCode);
+  if (debug) console.log(`[SMS:debug] phone normalized`, { input: maskPhone(phone), output: phoneResult.valid ? maskPhone(phoneResult.normalized) : phoneResult.error });
   if (!phoneResult.valid) {
     await createLog({
       shop,
@@ -42,6 +48,7 @@ export async function sendSms(params: {
 
   // Check balance
   const balance = await checkBalance(shop);
+  if (debug) console.log(`[SMS:debug] balance check`, balance);
   if (!balance.sufficient) {
     await createLog({
       shop,
@@ -90,10 +97,14 @@ export async function sendSms(params: {
     testMode: params.testMode ?? creds.testMode,
   });
 
+  if (debug) console.log(`[SMS:debug] sending via API`, { senderId: params.senderId ?? creds.senderId, testMode: params.testMode ?? creds.testMode });
+
   const result = await client.send(phoneResult.normalized, message, {
     senderId: params.senderId ?? creds.senderId,
     test: params.testMode ?? creds.testMode,
   });
+
+  if (debug) console.log(`[SMS:debug] API response`, result.ok ? { ok: true, msgId: result.data["msg-id"], points: result.data["points-charged"] } : { ok: false, error: result.error });
 
   if (result.ok) {
     await createLog({
@@ -174,8 +185,8 @@ export async function sendNotification(params: {
 
   // Load template
   const template = await getTemplate(shop, eventType);
-  if (!template || !template.enabled) {
-    return { success: false, error: `No active template for ${eventType}` };
+  if (!template) {
+    return { success: false, error: `No template found for ${eventType}` };
   }
 
   // Use customer locale if available, fall back to shop default

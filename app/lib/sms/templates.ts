@@ -19,8 +19,25 @@ export interface DefaultTemplate {
   recipientType: string;
 }
 
+export const TEMPLATE_ORDER = [
+  "customer_created",
+  "order_created",
+  "order_paid",
+  "order_partially_fulfilled",
+  "order_shipped",
+  "order_cancelled",
+];
+
 export function getDefaultTemplates(): DefaultTemplate[] {
   return [
+    {
+      eventType: "customer_created",
+      templateEn:
+        "Welcome {customer_name}! Thank you for joining {shop_name}. We look forward to serving you.",
+      templateAr:
+        "مرحبا {customer_name}! شكرا لانضمامك الى {shop_name}. نتطلع لخدمتك.",
+      recipientType: "customer",
+    },
     {
       eventType: "order_created",
       templateEn:
@@ -38,6 +55,14 @@ export function getDefaultTemplates(): DefaultTemplate[] {
       recipientType: "customer",
     },
     {
+      eventType: "order_partially_fulfilled",
+      templateEn:
+        "Part of your order {order_number} has been shipped. Track: {tracking_url} - {shop_name}",
+      templateAr:
+        "تم شحن جزء من طلبك {order_number}. تتبع: {tracking_url} - {shop_name}",
+      recipientType: "customer",
+    },
+    {
       eventType: "order_shipped",
       templateEn:
         "Your order {order_number} has been shipped via {carrier}. Track: {tracking_url} - {shop_name}",
@@ -51,22 +76,6 @@ export function getDefaultTemplates(): DefaultTemplate[] {
         "Order {order_number} has been cancelled. If you have questions, please contact us. - {shop_name}",
       templateAr:
         "تم إلغاء الطلب {order_number}. إذا كان لديك أي استفسار، يرجى التواصل معنا. - {shop_name}",
-      recipientType: "customer",
-    },
-    {
-      eventType: "order_partially_fulfilled",
-      templateEn:
-        "Part of your order {order_number} has been shipped. Track: {tracking_url} - {shop_name}",
-      templateAr:
-        "تم شحن جزء من طلبك {order_number}. تتبع: {tracking_url} - {shop_name}",
-      recipientType: "customer",
-    },
-    {
-      eventType: "fulfillment_created",
-      templateEn:
-        "Your order {order_number} has been shipped via {carrier}. Tracking: {tracking_number}. - {shop_name}",
-      templateAr:
-        "تم شحن طلبك {order_number} عبر {carrier}. رقم التتبع: {tracking_number}. - {shop_name}",
       recipientType: "customer",
     },
   ];

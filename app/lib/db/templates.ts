@@ -37,18 +37,20 @@ export async function saveTemplate(
 
 export async function seedDefaultTemplates(shop: string): Promise<void> {
   const existing = await getTemplates(shop);
-  if (existing.length > 0) return;
+  const existingTypes = new Set(existing.map((t) => t.eventType));
 
   const defaults = getDefaultTemplates();
   for (const tpl of defaults) {
-    await db.smsTemplate.create({
-      data: {
-        shop,
-        eventType: tpl.eventType,
-        templateEn: tpl.templateEn,
-        templateAr: tpl.templateAr,
-        recipientType: tpl.recipientType,
-      },
-    });
+    if (!existingTypes.has(tpl.eventType)) {
+      await db.smsTemplate.create({
+        data: {
+          shop,
+          eventType: tpl.eventType,
+          templateEn: tpl.templateEn,
+          templateAr: tpl.templateAr,
+          recipientType: tpl.recipientType,
+        },
+      });
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { KwtSmsClient, normalize, cleanMessage, maskPhone } from "../kwtsms";
+import { KwtSmsClient, normalize, cleanMessage } from "../kwtsms";
 import { getCredentials } from "../db/credentials";
 import { createLog } from "../db/logs";
 import { updateBalanceFromResponse } from "./balance";

@@ -3,6 +3,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, useActionData, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
 import { getTemplates, saveTemplate } from "../lib/db/templates";
+import { TEMPLATE_ORDER } from "../lib/sms/templates";
 import { countPages } from "../lib/kwtsms/message";
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -11,7 +12,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   order_shipped: "Order Shipped",
   order_cancelled: "Order Cancelled",
   order_partially_fulfilled: "Order Partially Fulfilled",
-  fulfillment_created: "Fulfillment Created",
+  customer_created: "New Customer (Welcome SMS)",
 };
 
 const RECIPIENT_OPTIONS = [
@@ -20,9 +21,17 @@ const RECIPIENT_OPTIONS = [
   { label: "Both", value: "both" },
 ];
 
+const EVENT_PLACEHOLDERS: Record<string, string[]> = {
+  customer_created: ["customer_name", "shop_name"],
+  order_created: ["order_number", "customer_name", "total_price", "currency", "item_count", "shop_name"],
+  order_paid: ["order_number", "customer_name", "total_price", "currency", "payment_method", "shop_name"],
+  order_partially_fulfilled: ["order_number", "customer_name", "tracking_url", "shop_name"],
+  order_shipped: ["order_number", "customer_name", "tracking_number", "tracking_url", "carrier", "shop_name"],
+  order_cancelled: ["order_number", "customer_name", "cancel_reason", "shop_name"],
+};
+
 interface TemplateRecord {
   eventType: string;
-  enabled: boolean;
   templateEn: string;
   templateAr: string;
   recipientType: string;
@@ -41,15 +50,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const templates = await getTemplates(shop);
 
-  return {
-    templates: templates.map((t) => ({
+  const mapped = templates
+    .filter((t) => TEMPLATE_ORDER.includes(t.eventType))
+    .map((t) => ({
       eventType: t.eventType,
-      enabled: t.enabled,
       templateEn: t.templateEn,
       templateAr: t.templateAr,
       recipientType: t.recipientType,
-    })),
-  };
+    }))
+    .sort((a, b) => TEMPLATE_ORDER.indexOf(a.eventType) - TEMPLATE_ORDER.indexOf(b.eventType));
+
+  return { templates: mapped };
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -71,13 +82,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   try {
     for (const eventType of eventTypes) {
-      const enabled = formData.get(`enabled_${eventType}`) === "true";
       const templateEn = (formData.get(`templateEn_${eventType}`) as string) ?? "";
       const templateAr = (formData.get(`templateAr_${eventType}`) as string) ?? "";
       const recipientType = (formData.get(`recipientType_${eventType}`) as string) ?? "customer";
 
       await saveTemplate(shop, eventType, {
-        enabled,
         templateEn,
         templateAr,
         recipientType,
@@ -110,33 +119,39 @@ function CharCounter({ text }: { text: string }) {
   );
 }
 
-function TemplateCard({
+function TemplateEditor({
   template,
   onChange,
 }: {
   template: TemplateRecord;
   onChange: (eventType: string, field: string, value: string | boolean) => void;
 }) {
-  const label = EVENT_TYPE_LABELS[template.eventType] ?? template.eventType;
-
   return (
-    <s-section heading={label}>
+    <div>
       {/* Hidden field to track this event type in the form */}
       <input type="hidden" name="eventType" value={template.eventType} />
-      <input
-        type="hidden"
-        name={`enabled_${template.eventType}`}
-        value={template.enabled ? "true" : "false"}
-      />
 
       <s-stack direction="block" gap="base">
-        <s-checkbox
-          label="Enabled"
-          checked={template.enabled || undefined}
-          onChange={(e: Event) =>
-            onChange(template.eventType, "enabled", (e.target as HTMLInputElement).checked)
-          }
-        />
+        <div>
+          <strong>Available Placeholders</strong>
+          <div style={{ marginTop: "4px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
+            {(EVENT_PLACEHOLDERS[template.eventType] ?? []).map((p) => (
+              <code
+                key={p}
+                style={{
+                  padding: "2px 8px",
+                  background: "#f6f6f7",
+                  border: "1px solid #e1e3e5",
+                  borderRadius: "4px",
+                  fontSize: "13px",
+                  color: "#202223",
+                }}
+              >
+                {`{${p}}`}
+              </code>
+            ))}
+          </div>
+        </div>
 
         <div>
           <strong>English Template</strong>
@@ -193,7 +208,7 @@ function TemplateCard({
           ))}
         </s-select>
       </s-stack>
-    </s-section>
+    </div>
   );
 }
 
@@ -202,6 +217,7 @@ export default function Templates() {
   const actionData = useActionData<ActionData>();
 
   const [templates, setTemplates] = useState<TemplateRecord[]>(loaderData.templates);
+  const [activeTab, setActiveTab] = useState(0);
 
   // Sync with loader data on navigation
   useEffect(() => {
@@ -220,8 +236,11 @@ export default function Templates() {
     [],
   );
 
+  const activeTemplate = templates[activeTab];
+
   return (
-    <s-page heading="SMS Templates">
+    <s-page heading="SMS Templates" {...{ fullWidth: true } as Record<string, unknown>}>
+      <div style={{ marginTop: "16px" }} />
       {/* Success banner */}
       {actionData?.ok && actionData.message && (
         <s-banner tone="success">
@@ -246,19 +265,78 @@ export default function Templates() {
         </s-section>
       ) : (
         <Form method="post">
-          <s-stack direction="block" gap="base">
-            {templates.map((template) => (
-              <TemplateCard
-                key={template.eventType}
-                template={template}
-                onChange={handleChange}
-              />
-            ))}
+          <s-section>
+            <div style={{ display: "flex", gap: "0", minHeight: "420px" }}>
+              {/* Sidebar */}
+              <div
+                style={{
+                  width: "220px",
+                  flexShrink: 0,
+                  borderRight: "1px solid #e1e3e5",
+                  paddingRight: "0",
+                }}
+              >
+                {templates.map((t, idx) => {
+                  const label = EVENT_TYPE_LABELS[t.eventType] ?? t.eventType;
+                  const isActive = idx === activeTab;
+                  return (
+                    <button
+                      key={t.eventType}
+                      type="button"
+                      onClick={() => setActiveTab(idx)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        width: "100%",
+                        padding: "10px 14px",
+                        border: "none",
+                        borderRight: isActive ? "3px solid #008060" : "3px solid transparent",
+                        background: isActive ? "#f1f8f5" : "transparent",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        fontSize: "13px",
+                        fontWeight: isActive ? 600 : 400,
+                        color: isActive ? "#004c3f" : "#202223",
+                        lineHeight: "1.3",
+                      }}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
 
-            <s-button variant="primary" type="submit">
-              Save All Templates
-            </s-button>
-          </s-stack>
+              {/* Editor */}
+              <div style={{ flex: 1, paddingLeft: "24px" }}>
+                <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 16px 0" }}>
+                  {EVENT_TYPE_LABELS[activeTemplate.eventType] ?? activeTemplate.eventType}
+                </h2>
+                <TemplateEditor
+                  template={activeTemplate}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {/* Hidden fields for non-active templates so they're included in form submission */}
+            {templates.map((t, idx) => {
+              if (idx === activeTab) return null;
+              return (
+                <div key={t.eventType} style={{ display: "none" }}>
+                  <input type="hidden" name="eventType" value={t.eventType} />
+                  <input type="hidden" name={`templateEn_${t.eventType}`} value={t.templateEn} />
+                  <input type="hidden" name={`templateAr_${t.eventType}`} value={t.templateAr} />
+                  <input type="hidden" name={`recipientType_${t.eventType}`} value={t.recipientType} />
+                </div>
+              );
+            })}
+          </s-section>
+
+          <div style={{ marginTop: "16px" }} />
+          <s-button variant="primary" type="submit">
+            Save All Templates
+          </s-button>
         </Form>
       )}
     </s-page>

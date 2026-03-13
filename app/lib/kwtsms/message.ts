@@ -19,6 +19,7 @@ function convertArabicNumerals(input: string): string {
   return result;
 }
 
+/* eslint-disable no-misleading-character-class */
 function stripEmojis(text: string): string {
   return text.replace(
     /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}]/gu,
@@ -32,6 +33,7 @@ function stripControlChars(text: string): string {
     "",
   );
 }
+/* eslint-enable no-misleading-character-class */
 
 function stripHtmlTags(text: string): string {
   return text.replace(/<[^>]*>/g, "");
@@ -57,6 +59,7 @@ export function countPages(text: string): PageCount {
   const chars = text.length;
 
   // If any character is above ASCII 127, treat as Unicode (Arabic)
+  // eslint-disable-next-line no-control-regex
   const isUnicode = /[^\x00-\x7F]/.test(text);
 
   if (chars === 0) {

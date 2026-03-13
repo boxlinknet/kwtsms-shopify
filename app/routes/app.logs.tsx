@@ -96,8 +96,10 @@ export default function LogsPage() {
 
   return (
     <s-page heading="SMS Logs">
+      <div style={{ marginTop: "16px" }} />
       {/* Summary cards */}
-      <s-section heading="This Month">
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>This Month</h2>
         <s-grid gridTemplateColumns="1fr 1fr 1fr">
           <s-grid-item>
             <s-box padding="base">
@@ -133,7 +135,8 @@ export default function LogsPage() {
       </s-section>
 
       {/* Filters and actions */}
-      <s-section heading="Filters">
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Filters</h2>
         <s-grid gridTemplateColumns="1fr 1fr 1fr">
           <s-grid-item>
             <s-select
@@ -166,7 +169,7 @@ export default function LogsPage() {
               <s-option value="order_fulfilled">Order Fulfilled</s-option>
               <s-option value="order_cancelled">Order Cancelled</s-option>
               <s-option value="order_partially_fulfilled">Partially Fulfilled</s-option>
-              <s-option value="fulfillment_created">Fulfillment Created</s-option>
+              <s-option value="customer_created">Customer Created</s-option>
               <s-option value="fulfillment_updated">Fulfillment Updated</s-option>
               <s-option value="customer_created">Customer Created</s-option>
             </s-select>
@@ -187,7 +190,8 @@ export default function LogsPage() {
       </s-section>
 
       {/* Logs table */}
-      <s-section heading={`Logs (${total} total)`} padding="none">
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Logs ({total} total)</h2>
         {logs.length === 0 ? (
           <s-box padding="base">
             <s-paragraph>
@@ -205,13 +209,10 @@ export default function LogsPage() {
           >
             <s-table-header-row>
               <s-table-header listSlot="kicker">Date</s-table-header>
-              <s-table-header listSlot="primary">Event</s-table-header>
+              <s-table-header listSlot="primary">Sender ID</s-table-header>
               <s-table-header listSlot="secondary">Phone</s-table-header>
+              <s-table-header listSlot="labeled">Event</s-table-header>
               <s-table-header listSlot="labeled">Status</s-table-header>
-              <s-table-header listSlot="labeled" format="numeric">
-                Credits
-              </s-table-header>
-              <s-table-header listSlot="labeled">Sender ID</s-table-header>
             </s-table-header-row>
             <s-table-body>
               {logs.map((log) => (
@@ -219,15 +220,14 @@ export default function LogsPage() {
                   <s-table-cell>
                     {new Date(log.createdAt).toLocaleString()}
                   </s-table-cell>
-                  <s-table-cell>{log.eventType}</s-table-cell>
+                  <s-table-cell>{log.senderId}</s-table-cell>
                   <s-table-cell>{log.phoneMasked}</s-table-cell>
+                  <s-table-cell>{log.eventType}</s-table-cell>
                   <s-table-cell>
                     <s-badge tone={statusBadgeTone(log.status)}>
                       {log.status}
                     </s-badge>
                   </s-table-cell>
-                  <s-table-cell>{log.pointsCharged}</s-table-cell>
-                  <s-table-cell>{log.senderId}</s-table-cell>
                 </s-table-row>
               ))}
             </s-table-body>

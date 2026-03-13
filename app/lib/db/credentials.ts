@@ -1,7 +1,10 @@
 import db from "../../db.server";
+import { encrypt, decrypt } from "../crypto";
 
 export async function getCredentials(shop: string) {
-  return db.gatewayCredentials.findUnique({ where: { shop } });
+  const creds = await db.gatewayCredentials.findUnique({ where: { shop } });
+  if (!creds) return null;
+  return { ...creds, password: decrypt(creds.password) };
 }
 
 export async function saveCredentials(
@@ -21,7 +24,7 @@ export async function saveCredentials(
   const updateData: Record<string, unknown> = {};
 
   if (data.username !== undefined) updateData.username = data.username;
-  if (data.password !== undefined) updateData.password = data.password;
+  if (data.password !== undefined) updateData.password = encrypt(data.password);
   if (data.senderId !== undefined) updateData.senderId = data.senderId;
   if (data.testMode !== undefined) updateData.testMode = data.testMode;
   if (data.senderIds !== undefined) updateData.senderIds = JSON.stringify(data.senderIds);
@@ -38,9 +41,28 @@ export async function saveCredentials(
     create: {
       shop,
       username: data.username ?? "",
-      password: data.password ?? "",
+      password: data.password ? encrypt(data.password) : "",
       ...updateData,
     },
     update: updateData,
+  });
+}
+
+export async function clearCredentials(shop: string) {
+  const existing = await db.gatewayCredentials.findUnique({ where: { shop } });
+  if (!existing) return;
+
+  await db.gatewayCredentials.update({
+    where: { shop },
+    data: {
+      username: "",
+      password: "",
+      senderId: "",
+      senderIds: "[]",
+      coverage: "[]",
+      balanceAvailable: 0,
+      balancePurchased: 0,
+      credentialsVerified: false,
+    },
   });
 }

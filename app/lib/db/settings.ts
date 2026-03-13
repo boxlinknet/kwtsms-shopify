@@ -29,7 +29,6 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   default_country_code: "965",
   default_language: "en",
   debug_logging: "false",
-  test_mode: "true",
   admin_phone: "",
   notify_order_created: "true",
   notify_order_paid: "true",
@@ -37,7 +36,6 @@ const DEFAULT_SETTINGS: Record<string, string> = {
   notify_order_partially_fulfilled: "true",
   notify_order_cancelled: "true",
   notify_customer_created: "false",
-  notify_low_stock: "false",
 };
 
 export async function initDefaults(shop: string): Promise<void> {

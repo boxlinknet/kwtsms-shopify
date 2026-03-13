@@ -2,17 +2,15 @@ import { useState, useEffect } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Form, useActionData, useLoaderData } from "react-router";
 import { authenticate } from "../shopify.server";
-import { getCredentials, saveCredentials } from "../lib/db/credentials";
-import { KwtSmsClient } from "../lib/kwtsms";
+import { getCredentials, saveCredentials, clearCredentials } from "../lib/db/credentials";
+import { KwtSmsClient, COUNTRY_NAMES } from "../lib/kwtsms";
+import { sendSms } from "../lib/sms/sender";
 
 interface LoaderData {
   username: string;
   senderId: string;
-  testMode: boolean;
   senderIds: string[];
   coverage: string[];
-  balanceAvailable: number;
-  balancePurchased: number;
   credentialsVerified: boolean;
 }
 
@@ -36,11 +34,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return {
     username: creds?.username ?? "",
     senderId: creds?.senderId ?? "",
-    testMode: creds?.testMode ?? true,
     senderIds: creds?.senderIds ? JSON.parse(creds.senderIds as string) : [],
     coverage: creds?.coverage ? JSON.parse(creds.coverage as string) : [],
-    balanceAvailable: creds?.balanceAvailable ?? 0,
-    balancePurchased: creds?.balancePurchased ?? 0,
     credentialsVerified: creds?.credentialsVerified ?? false,
   } satisfies LoaderData;
 };
@@ -71,8 +66,11 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const coverageResult = await client.coverage();
     const coverage = coverageResult.ok ? coverageResult.data.prefixes : [];
 
+    const defaultSenderId = senderIds.length > 0 ? senderIds[0] : "";
+
     await saveCredentials(shop, {
       username, password, senderIds, coverage,
+      senderId: defaultSenderId,
       balanceAvailable: balanceResult.data.available,
       balancePurchased: balanceResult.data.purchased,
       credentialsVerified: true,
@@ -81,57 +79,74 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return {
       intent, ok: true, message: "Credentials verified successfully.",
       balance: { available: balanceResult.data.available, purchased: balanceResult.data.purchased },
-      senderIds, coverage, credentialsVerified: true,
+      senderIds, coverage, credentialsVerified: true, senderId: defaultSenderId,
     } satisfies ActionData;
   }
 
-  if (intent === "save_sender") {
-    const senderId = formData.get("senderId") as string;
-    const testMode = formData.get("testMode") === "true";
-    await saveCredentials(shop, { senderId, testMode });
-    return { intent, ok: true, message: "Sender ID and settings saved.", senderId } satisfies ActionData;
+  if (intent === "disconnect") {
+    await clearCredentials(shop);
+    return { intent, ok: true, message: "Gateway disconnected.", credentialsVerified: false } satisfies ActionData;
   }
 
-  if (intent === "refresh_balance") {
+  if (intent === "reload") {
     const creds = await getCredentials(shop);
     if (!creds?.username || !creds?.password) {
       return { intent, ok: false, error: "Credentials not configured." } satisfies ActionData;
     }
     const client = new KwtSmsClient({ username: creds.username, password: creds.password });
-    const result = await client.balance();
-    if (!result.ok) {
-      return { intent, ok: false, error: `Failed to refresh: ${result.error.description}` } satisfies ActionData;
+    const [balanceResult, senderResult, coverageResult] = await Promise.all([
+      client.balance(),
+      client.senderIds(),
+      client.coverage(),
+    ]);
+    if (!balanceResult.ok) {
+      return { intent, ok: false, error: `Reload failed: ${balanceResult.error.description}` } satisfies ActionData;
     }
-    await saveCredentials(shop, { balanceAvailable: result.data.available, balancePurchased: result.data.purchased });
+    const senderIds = senderResult.ok ? senderResult.data.senderid : [];
+    const coverage = coverageResult.ok ? coverageResult.data.prefixes : [];
+    await saveCredentials(shop, {
+      senderIds, coverage,
+      balanceAvailable: balanceResult.data.available,
+      balancePurchased: balanceResult.data.purchased,
+    });
     return {
-      intent, ok: true, message: "Balance refreshed.",
-      balance: { available: result.data.available, purchased: result.data.purchased },
+      intent, ok: true, message: "Account data reloaded.",
+      balance: { available: balanceResult.data.available, purchased: balanceResult.data.purchased },
+      senderIds, coverage,
     } satisfies ActionData;
   }
 
+  if (intent === "save_sender") {
+    const senderId = formData.get("senderId") as string;
+    await saveCredentials(shop, { senderId });
+    return { intent, ok: true, message: "Sender ID saved.", senderId } satisfies ActionData;
+  }
+
   if (intent === "send_test") {
-    const phone = formData.get("phone") as string;
+    const rawPhone = formData.get("phone") as string;
     const message = formData.get("message") as string;
-    if (!phone || !message) {
+    if (!rawPhone || !message) {
       return { intent, ok: false, error: "Phone number and message are required." } satisfies ActionData;
     }
-    const creds = await getCredentials(shop);
-    if (!creds?.username || !creds?.password) {
-      return { intent, ok: false, error: "Credentials not configured." } satisfies ActionData;
-    }
-    const client = new KwtSmsClient({ username: creds.username, password: creds.password, senderId: creds.senderId ?? undefined });
-    const result = await client.send(phone, message, { test: true });
-    if (!result.ok) {
-      return { intent, ok: false, error: `Test SMS failed: ${result.error.description}` } satisfies ActionData;
+    const result = await sendSms({
+      shop,
+      phone: rawPhone,
+      message,
+      eventType: "test",
+      testMode: true,
+    });
+    if (!result.success) {
+      return { intent, ok: false, error: `Test SMS failed: ${result.error}` } satisfies ActionData;
     }
     return {
       intent, ok: true, message: "Test SMS sent successfully.",
-      testResult: { msgId: result.data["msg-id"], numbers: result.data.numbers, pointsCharged: result.data["points-charged"] },
+      testResult: { msgId: result.msgId ?? "", numbers: 1, pointsCharged: result.pointsCharged ?? 0 },
     } satisfies ActionData;
   }
 
   return { intent: "", ok: false, error: "Unknown action." } satisfies ActionData;
 };
+
 
 export default function GatewaySettings() {
   const loaderData = useLoaderData<typeof loader>();
@@ -140,14 +155,13 @@ export default function GatewaySettings() {
   const [username, setUsername] = useState(loaderData.username);
   const [password, setPassword] = useState("");
   const [senderId, setSenderId] = useState(loaderData.senderId);
-  const [testMode, setTestMode] = useState(loaderData.testMode);
   const [phone, setPhone] = useState("");
-  const [testMessage, setTestMessage] = useState("This is a test SMS from your Shopify store.");
+  const [testMessage, setTestMessage] = useState(
+    `This is a test SMS from your Shopify store. ${new Date().toLocaleString()}`,
+  );
 
   const [senderIds, setSenderIds] = useState<string[]>(loaderData.senderIds);
   const [coverage, setCoverage] = useState(loaderData.coverage);
-  const [balanceAvailable, setBalanceAvailable] = useState(loaderData.balanceAvailable);
-  const [balancePurchased, setBalancePurchased] = useState(loaderData.balancePurchased);
   const [credentialsVerified, setCredentialsVerified] = useState(loaderData.credentialsVerified);
 
   useEffect(() => {
@@ -155,57 +169,106 @@ export default function GatewaySettings() {
     if (actionData.intent === "verify" && actionData.ok) {
       if (actionData.senderIds) setSenderIds(actionData.senderIds);
       if (actionData.coverage) setCoverage(actionData.coverage);
-      if (actionData.balance) {
-        setBalanceAvailable(actionData.balance.available);
-        setBalancePurchased(actionData.balance.purchased);
-      }
+      if (actionData.senderId !== undefined) setSenderId(actionData.senderId);
       if (actionData.credentialsVerified) setCredentialsVerified(true);
     }
-    if (actionData.intent === "refresh_balance" && actionData.ok && actionData.balance) {
-      setBalanceAvailable(actionData.balance.available);
-      setBalancePurchased(actionData.balance.purchased);
+    if (actionData.intent === "disconnect" && actionData.ok) {
+      setCredentialsVerified(false);
+      setSenderIds([]);
+      setCoverage([]);
+      setUsername("");
+      setPassword("");
+      setSenderId("");
+    }
+    if (actionData.intent === "reload" && actionData.ok) {
+      if (actionData.senderIds) setSenderIds(actionData.senderIds);
+      if (actionData.coverage) setCoverage(actionData.coverage);
     }
   }, [actionData]);
 
   return (
     <s-page heading="Gateway Settings">
-      <s-section heading="API Credentials">
+      <div style={{ marginTop: "16px" }} />
+      <s-section>
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>API Credentials</h2>
         {actionData?.intent === "verify" && actionData.ok && (
           <s-banner tone="success">{actionData.message}</s-banner>
         )}
         {actionData?.intent === "verify" && !actionData.ok && (
           <s-banner tone="critical">{actionData.error}</s-banner>
         )}
-        <Form method="post">
-          <input type="hidden" name="intent" value="verify" />
-          <s-text-field
-            label="Username"
-            name="username"
-            value={username}
-            onInput={(e: Event) => setUsername((e.target as HTMLInputElement).value)}
-            autocomplete="off"
-          />
-          <s-text-field
-            label="Password"
-            name="password"
-            value={password}
-            onInput={(e: Event) => setPassword((e.target as HTMLInputElement).value)}
-            autocomplete="off"
-            {...{ type: "password" } as Record<string, string>}
-          />
-          <s-checkbox
-            label="Test mode (SMS will not be delivered)"
-            checked={testMode || undefined}
-            onChange={(e: Event) => setTestMode((e.target as HTMLInputElement).checked)}
-          />
-          <br />
-          <s-button variant="primary" type="submit">Verify Credentials</s-button>
-        </Form>
+        {actionData?.intent === "disconnect" && actionData.ok && (
+          <s-banner tone="info">{actionData.message}</s-banner>
+        )}
+        {actionData?.intent === "reload" && actionData.ok && (
+          <s-banner tone="success">{actionData.message}</s-banner>
+        )}
+        {actionData?.intent === "reload" && !actionData.ok && (
+          <s-banner tone="critical">{actionData.error}</s-banner>
+        )}
+
+        {!credentialsVerified ? (
+          <Form method="post">
+            <input type="hidden" name="intent" value="verify" />
+            <s-text-field
+              label="Username"
+              name="username"
+              value={username}
+              onInput={(e: Event) => setUsername((e.target as HTMLInputElement).value)}
+              autocomplete="off"
+            />
+            <s-text-field
+              label="Password"
+              name="password"
+              value={password}
+              onInput={(e: Event) => setPassword((e.target as HTMLInputElement).value)}
+              autocomplete="off"
+              {...{ type: "password" } as Record<string, string>}
+            />
+            <br />
+            <s-button variant="primary" type="submit">Login</s-button>
+          </Form>
+        ) : (
+          <div>
+            <s-paragraph>
+              Connected as <strong>{username}</strong>
+            </s-paragraph>
+            <br />
+            <div style={{ display: "flex", gap: "8px" }}>
+              <Form method="post">
+                <input type="hidden" name="intent" value="disconnect" />
+                <s-button variant="primary" tone="critical" type="submit">Logout</s-button>
+              </Form>
+              <Form method="post">
+                <input type="hidden" name="intent" value="reload" />
+                <s-button type="submit">Reload</s-button>
+              </Form>
+            </div>
+          </div>
+        )}
       </s-section>
 
       {credentialsVerified && (
         <>
-          <s-section heading="Sender Settings">
+          {coverage.length > 0 && (
+            <s-section>
+              <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coverage</h2>
+              <s-paragraph>
+                Active countries: {coverage.map((p: string) => `${COUNTRY_NAMES[p] || p} (${p})`).join(", ")}
+              </s-paragraph>
+              <div style={{ textAlign: "right" }}>
+                <s-text>
+                  * To add more countries, visit your{" "}
+                  <s-link href="https://www.kwtsms.com/login" target="_blank">
+                    kwtSMS dashboard
+                  </s-link>.
+                </s-text>
+              </div>
+            </s-section>
+          )}
+
+          <s-section>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Sender Settings</h2>
             {actionData?.intent === "save_sender" && actionData.ok && (
               <s-banner tone="success">{actionData.message}</s-banner>
             )}
@@ -214,7 +277,6 @@ export default function GatewaySettings() {
             )}
             <Form method="post">
               <input type="hidden" name="intent" value="save_sender" />
-              <input type="hidden" name="testMode" value={testMode ? "true" : "false"} />
               {senderIds.length > 0 ? (
                 <s-select
                   label="Sender ID"
@@ -234,34 +296,8 @@ export default function GatewaySettings() {
             </Form>
           </s-section>
 
-          <s-section heading="Account Balance">
-            {actionData?.intent === "refresh_balance" && actionData.ok && (
-              <s-banner tone="success">{actionData.message}</s-banner>
-            )}
-            {actionData?.intent === "refresh_balance" && !actionData.ok && (
-              <s-banner tone="critical">{actionData.error}</s-banner>
-            )}
-            <s-paragraph>
-              <strong>Available:</strong> {balanceAvailable.toFixed(2)} credits
-            </s-paragraph>
-            <s-paragraph>
-              <strong>Purchased:</strong> {balancePurchased.toFixed(2)} credits
-            </s-paragraph>
-            <Form method="post">
-              <input type="hidden" name="intent" value="refresh_balance" />
-              <s-button type="submit">Refresh Balance</s-button>
-            </Form>
-          </s-section>
-
-          {coverage.length > 0 && (
-            <s-section heading="Coverage">
-              <s-paragraph>
-                Active country prefixes: {coverage.map((p: string) => `+${p}`).join(", ")}
-              </s-paragraph>
-            </s-section>
-          )}
-
-          <s-section heading="Test SMS">
+          <s-section>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Test SMS</h2>
             {actionData?.intent === "send_test" && actionData.ok && (
               <s-banner tone="success">{actionData.message}</s-banner>
             )}
@@ -277,7 +313,9 @@ export default function GatewaySettings() {
                 onInput={(e: Event) => setPhone((e.target as HTMLInputElement).value)}
                 autocomplete="off"
               />
-              <s-text>Enter with country code, e.g. 96598765432</s-text>
+              <div style={{ textAlign: "right" }}>
+                <s-text>Enter local or international format, e.g. 98765432 or 96598765432</s-text>
+              </div>
               <s-text-field
                 label="Message"
                 name="message"
@@ -285,13 +323,16 @@ export default function GatewaySettings() {
                 onInput={(e: Event) => setTestMessage((e.target as HTMLInputElement).value)}
                 autocomplete="off"
               />
-              <s-text>Test mode is always enabled. No actual message will be delivered.</s-text>
+              <div style={{ textAlign: "right" }}>
+                <s-text>Test mode is always enabled for test SMS. No actual message will be delivered.</s-text>
+              </div>
               <br />
               <s-button type="submit">Send Test SMS</s-button>
             </Form>
 
             {actionData?.intent === "send_test" && actionData.ok && actionData.testResult && (
-              <s-section heading="Test Result">
+              <s-section>
+                <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Test Result</h2>
                 <s-paragraph>Message ID: {actionData.testResult.msgId}</s-paragraph>
                 <s-paragraph>Numbers: {actionData.testResult.numbers}</s-paragraph>
                 <s-paragraph>Points charged: {actionData.testResult.pointsCharged}</s-paragraph>
