@@ -4,6 +4,13 @@ export interface PhoneResult {
   error?: string;
 }
 
+export interface PhoneRule {
+  /** Valid local number lengths (digits after country code) */
+  localLengths: number[];
+  /** Valid first digit(s) of local number for mobile. If omitted, any starting digit accepted. */
+  mobileStartDigits?: string[];
+}
+
 const ARABIC_INDIC = "٠١٢٣٤٥٦٧٨٩";
 const EXTENDED_ARABIC_INDIC = "۰۱۲۳۴۵۶۷۸۹";
 
@@ -49,6 +56,16 @@ export function normalize(phone: string, defaultCountryCode?: string): PhoneResu
     normalized = defaultCountryCode + normalized;
   }
 
+  // Strip domestic trunk prefix (leading 0 after country code)
+  // e.g. 9660559... → 966559..., 97105x → 9715x, 20010x → 2010x
+  const cc = findCountryCode(normalized);
+  if (cc) {
+    const local = normalized.slice(cc.length);
+    if (local.startsWith("0")) {
+      normalized = cc + local.replace(/^0+/, "");
+    }
+  }
+
   if (normalized.length < 7) {
     return { valid: false, normalized, error: "Phone number too short (minimum 7 digits)" };
   }
@@ -57,7 +74,183 @@ export function normalize(phone: string, defaultCountryCode?: string): PhoneResu
     return { valid: false, normalized, error: "Phone number too long (maximum 15 digits)" };
   }
 
+  // Validate against country-specific format rules (length + mobile prefix)
+  const formatCheck = validatePhoneFormat(normalized);
+  if (!formatCheck.valid) {
+    return { valid: false, normalized, error: formatCheck.error };
+  }
+
   return { valid: true, normalized };
+}
+
+/**
+ * Phone number validation rules by country code.
+ * Validates local number length and mobile starting digits.
+ *
+ * Sources (verified across 3+ per country):
+ * [1] ITU-T E.164 / National Numbering Plans (itu.int)
+ * [2] Wikipedia "Telephone numbers in [Country]" articles (en.wikipedia.org)
+ * [3] HowToCallAbroad.com country dialing guides
+ * [4] CountryCode.com country format pages
+ *
+ * localLengths: valid digit count(s) AFTER country code
+ *   e.g. Kuwait 965 + 8 local digits = 11 total digits
+ * mobileStartDigits: valid first character(s) of the local number
+ *   e.g. Kuwait ["4","5","6","9"] means 9xxxxxxx, 6xxxxxxx, 5xxxxxxx, 4xxxxxxx
+ *
+ * Countries not listed here pass through with generic E.164 validation (7-15 digits).
+ */
+export const PHONE_RULES: Record<string, PhoneRule> = {
+  // === GCC ===
+  "965": { localLengths: [8], mobileStartDigits: ["4", "5", "6", "9"] },       // Kuwait: 4x=Virgin/STC, 5x=STC/Zain, 6x=Ooredoo, 9x=Zain
+  "966": { localLengths: [9], mobileStartDigits: ["5"] },                       // Saudi Arabia: 50-59
+  "971": { localLengths: [9], mobileStartDigits: ["5"] },                       // UAE: 50,52-56,58
+  "973": { localLengths: [8], mobileStartDigits: ["3", "6"] },                  // Bahrain: 3x,6x
+  "974": { localLengths: [8], mobileStartDigits: ["3", "5", "6", "7"] },        // Qatar: 33,55,66,77
+  "968": { localLengths: [8], mobileStartDigits: ["7", "9"] },                  // Oman: 7x,9x
+  // === Levant ===
+  "962": { localLengths: [9], mobileStartDigits: ["7"] },                       // Jordan: 75,77,78,79
+  "961": { localLengths: [7, 8], mobileStartDigits: ["3", "7", "8"] },          // Lebanon: 3x (legacy 7-digit), 7x/81 (8-digit)
+  "970": { localLengths: [9], mobileStartDigits: ["5"] },                       // Palestine: 56=Jawwal, 59=Ooredoo
+  "964": { localLengths: [10], mobileStartDigits: ["7"] },                      // Iraq: 75-79
+  "963": { localLengths: [9], mobileStartDigits: ["9"] },                       // Syria: 93-96,98,99
+  // === Other Arab ===
+  "967": { localLengths: [9], mobileStartDigits: ["7"] },                       // Yemen: 70,71,73,77
+  "20":  { localLengths: [10], mobileStartDigits: ["1"] },                      // Egypt: 10,11,12,15
+  "218": { localLengths: [9], mobileStartDigits: ["9"] },                       // Libya: 91-95
+  "216": { localLengths: [8], mobileStartDigits: ["2", "4", "5", "9"] },        // Tunisia: 2x,4x=MVNO,5x,9x
+  "212": { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // Morocco: 6x,7x
+  "213": { localLengths: [9], mobileStartDigits: ["5", "6", "7"] },             // Algeria: 5x,6x,7x
+  "249": { localLengths: [9], mobileStartDigits: ["9"] },                       // Sudan: 90,91,92,96,99
+  // === Non-Arab Middle East ===
+  "98":  { localLengths: [10], mobileStartDigits: ["9"] },                      // Iran: 9x
+  "90":  { localLengths: [10], mobileStartDigits: ["5"] },                      // Turkey: 5x
+  "972": { localLengths: [9], mobileStartDigits: ["5"] },                       // Israel: 50,52-55,58
+  // === South Asia ===
+  "91":  { localLengths: [10], mobileStartDigits: ["6", "7", "8", "9"] },       // India: 6-9x
+  "92":  { localLengths: [10], mobileStartDigits: ["3"] },                      // Pakistan: 3x
+  "880": { localLengths: [10], mobileStartDigits: ["1"] },                      // Bangladesh: 1x
+  "94":  { localLengths: [9], mobileStartDigits: ["7"] },                       // Sri Lanka: 70-78
+  "960": { localLengths: [7], mobileStartDigits: ["7", "9"] },                  // Maldives: 7x,9x
+  // === East Asia ===
+  "86":  { localLengths: [11], mobileStartDigits: ["1"] },                      // China: 13-19x
+  "81":  { localLengths: [10], mobileStartDigits: ["7", "8", "9"] },            // Japan: 70,80,90
+  "82":  { localLengths: [10], mobileStartDigits: ["1"] },                      // South Korea: 010
+  "886": { localLengths: [9], mobileStartDigits: ["9"] },                       // Taiwan: 9x
+  // === Southeast Asia ===
+  "65":  { localLengths: [8], mobileStartDigits: ["8", "9"] },                  // Singapore: 8x,9x
+  "60":  { localLengths: [9, 10], mobileStartDigits: ["1"] },                   // Malaysia: 1x (9 or 10 digits)
+  "62":  { localLengths: [9, 10, 11, 12], mobileStartDigits: ["8"] },           // Indonesia: 8x (variable length)
+  "63":  { localLengths: [10], mobileStartDigits: ["9"] },                      // Philippines: 9x
+  "66":  { localLengths: [9], mobileStartDigits: ["6", "8", "9"] },             // Thailand: 6x,8x,9x
+  "84":  { localLengths: [9], mobileStartDigits: ["3", "5", "7", "8", "9"] },   // Vietnam: 3x,5x,7x,8x,9x
+  "95":  { localLengths: [9], mobileStartDigits: ["9"] },                       // Myanmar: 9x
+  "855": { localLengths: [8, 9], mobileStartDigits: ["1", "6", "7", "8", "9"] },// Cambodia: mixed lengths
+  "976": { localLengths: [8], mobileStartDigits: ["6", "8", "9"] },             // Mongolia: 6x,8x,9x
+  // === Europe ===
+  "44":  { localLengths: [10], mobileStartDigits: ["7"] },                      // UK: 7x
+  "33":  { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // France: 6x,7x
+  "49":  { localLengths: [10, 11], mobileStartDigits: ["1"] },                  // Germany: 15x,16x,17x
+  "39":  { localLengths: [10], mobileStartDigits: ["3"] },                      // Italy: 3x
+  "34":  { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // Spain: 6x,7x
+  "31":  { localLengths: [9], mobileStartDigits: ["6"] },                       // Netherlands: 6x
+  "32":  { localLengths: [9] },                                                  // Belgium: length only (complex prefixes)
+  "41":  { localLengths: [9], mobileStartDigits: ["7"] },                       // Switzerland: 74-79
+  "43":  { localLengths: [10], mobileStartDigits: ["6"] },                      // Austria: 65x-69x
+  "47":  { localLengths: [8], mobileStartDigits: ["4", "9"] },                  // Norway: 4x,9x
+  "48":  { localLengths: [9] },                                                  // Poland: length only (complex prefixes)
+  "30":  { localLengths: [10], mobileStartDigits: ["6"] },                      // Greece: 69x
+  "420": { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // Czech Republic: 6x,7x
+  "46":  { localLengths: [9], mobileStartDigits: ["7"] },                       // Sweden: 7x
+  "45":  { localLengths: [8] },                                                  // Denmark: length only (complex prefixes)
+  "40":  { localLengths: [9], mobileStartDigits: ["7"] },                       // Romania: 7x
+  "36":  { localLengths: [9] },                                                  // Hungary: length only (complex prefixes)
+  "380": { localLengths: [9] },                                                  // Ukraine: length only (complex prefixes)
+  // === Americas ===
+  "1":   { localLengths: [10] },                                                 // USA/Canada: no mobile-specific prefix
+  "52":  { localLengths: [10] },                                                 // Mexico: no mobile-specific prefix since 2019
+  "55":  { localLengths: [11] },                                                 // Brazil: area code + 9 + subscriber
+  "57":  { localLengths: [10], mobileStartDigits: ["3"] },                      // Colombia: 3x
+  "54":  { localLengths: [10], mobileStartDigits: ["9"] },                      // Argentina: 9 + area + subscriber
+  "56":  { localLengths: [9], mobileStartDigits: ["9"] },                       // Chile: 9x
+  "58":  { localLengths: [10], mobileStartDigits: ["4"] },                      // Venezuela: 4x
+  "51":  { localLengths: [9], mobileStartDigits: ["9"] },                       // Peru: 9x
+  "593": { localLengths: [9], mobileStartDigits: ["9"] },                       // Ecuador: 9x
+  "53":  { localLengths: [8], mobileStartDigits: ["5", "6"] },                  // Cuba: 5x,6x
+  // === Africa ===
+  "27":  { localLengths: [9], mobileStartDigits: ["6", "7", "8"] },             // South Africa: 6x,7x,8x
+  "234": { localLengths: [10], mobileStartDigits: ["7", "8", "9"] },            // Nigeria: 70,71,80,81,90,91
+  "254": { localLengths: [9], mobileStartDigits: ["1", "7"] },                  // Kenya: 1x,7x
+  "233": { localLengths: [9], mobileStartDigits: ["2", "5"] },                  // Ghana: 2x,5x
+  "251": { localLengths: [9], mobileStartDigits: ["7", "9"] },                  // Ethiopia: 7x,9x
+  "255": { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // Tanzania: 6x,7x
+  "256": { localLengths: [9], mobileStartDigits: ["7"] },                       // Uganda: 7x
+  "237": { localLengths: [9], mobileStartDigits: ["6"] },                       // Cameroon: 6x
+  "225": { localLengths: [10] },                                                 // Ivory Coast: length only (01,05,07 prefixes)
+  "221": { localLengths: [9], mobileStartDigits: ["7"] },                       // Senegal: 7x
+  "252": { localLengths: [9], mobileStartDigits: ["6", "7"] },                  // Somalia: 6x,7x
+  "250": { localLengths: [9], mobileStartDigits: ["7"] },                       // Rwanda: 7x
+  // === Oceania ===
+  "61":  { localLengths: [9], mobileStartDigits: ["4"] },                       // Australia: 4x
+  "64":  { localLengths: [8, 9, 10], mobileStartDigits: ["2"] },                // New Zealand: 21,22,27-29
+};
+
+/**
+ * Find the country code prefix from a normalized phone number.
+ * Tries 3-digit codes first, then 2-digit, then 1-digit (longest match wins).
+ */
+export function findCountryCode(normalized: string): string | null {
+  if (normalized.length >= 3) {
+    const cc3 = normalized.slice(0, 3);
+    if (PHONE_RULES[cc3]) return cc3;
+  }
+  if (normalized.length >= 2) {
+    const cc2 = normalized.slice(0, 2);
+    if (PHONE_RULES[cc2]) return cc2;
+  }
+  if (normalized.length >= 1) {
+    const cc1 = normalized.slice(0, 1);
+    if (PHONE_RULES[cc1]) return cc1;
+  }
+  return null;
+}
+
+/**
+ * Validate a normalized phone number against country-specific format rules.
+ * Checks local number length and mobile starting digits.
+ * Numbers with no matching country rules pass through (generic E.164 only).
+ */
+export function validatePhoneFormat(normalized: string): { valid: boolean; error?: string } {
+  const cc = findCountryCode(normalized);
+  if (!cc) return { valid: true };
+
+  const rule = PHONE_RULES[cc];
+  const local = normalized.slice(cc.length);
+  const country = COUNTRY_NAMES[cc] ?? `+${cc}`;
+
+  // Check local number length
+  if (!rule.localLengths.includes(local.length)) {
+    const expected = rule.localLengths.join(" or ");
+    return {
+      valid: false,
+      error: `Invalid ${country} number: expected ${expected} digits after +${cc}, got ${local.length}`,
+    };
+  }
+
+  // Check mobile starting digits (if rules exist for this country)
+  if (rule.mobileStartDigits && rule.mobileStartDigits.length > 0) {
+    const hasValidPrefix = rule.mobileStartDigits.some((prefix) =>
+      local.startsWith(prefix),
+    );
+    if (!hasValidPrefix) {
+      return {
+        valid: false,
+        error: `Invalid ${country} mobile number: after +${cc} must start with ${rule.mobileStartDigits.join(", ")}`,
+      };
+    }
+  }
+
+  return { valid: true };
 }
 
 export const COUNTRY_NAMES: Record<string, string> = {
