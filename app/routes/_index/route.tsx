@@ -147,7 +147,7 @@ export default function App() {
           <div className={styles.statLabel}>Delivery Rate</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>No Expiry</div>
+          <div className={styles.statNumber}>Forever</div>
           <div className={styles.statLabel}>Credits Never Expire</div>
         </div>
         <div className={styles.stat}>
@@ -158,7 +158,7 @@ export default function App() {
 
       {/* ── Who gets SMS ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
-        <div className={styles.sectionLabel}>Recipients</div>
+
         <h2 className={styles.sectionTitle}>
           Notify both your customers and your team
         </h2>
@@ -344,7 +344,7 @@ export default function App() {
 
       {/* ── How it works ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="setup">
-        <div className={styles.sectionLabel}>Setup</div>
+
         <h2 className={styles.sectionTitle}>Up and running in 3 minutes</h2>
         <div style={{ marginBottom: "24px" }} />
 
