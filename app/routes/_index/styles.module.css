@@ -195,11 +195,18 @@
 }
 
 .priceTag {
-  display: block;
-  margin-top: 14px;
-  font-size: 0.85rem;
-  color: var(--text-light);
+  margin-top: 20px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text);
+  max-width: 480px;
   animation: fadeUp 0.5s ease 0.2s both;
+}
+
+.priceTag strong {
+  color: var(--primary-dark);
+  font-weight: 700;
+  font-size: 1.05rem;
 }
 
 @keyframes fadeUp {

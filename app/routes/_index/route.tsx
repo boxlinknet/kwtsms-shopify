@@ -131,9 +131,11 @@ export default function App() {
           </a>
         </div>
 
-        <span className={styles.priceTag}>
-          No subscription. No hidden fees. You only pay for SMS credits.
-        </span>
+        <p className={styles.priceTag}>
+          <strong>100% Free app. Pay-as-you-go SMS. No contracts.</strong>
+          <br />
+          Use your own private Sender ID so customers see your brand name, not a random number.
+        </p>
       </section>
 
       {/* ── Stats ── */}
