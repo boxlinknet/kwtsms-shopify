@@ -235,6 +235,11 @@
   max-width: 1040px;
   margin: 0 auto;
   padding: 68px 24px;
+  scroll-margin-top: 60px;
+}
+
+.sectionCompact {
+  padding: 48px 24px;
 }
 
 .sectionCenter {
@@ -541,6 +546,7 @@
   padding: 68px 24px 76px;
   background: var(--primary-light);
   border-top: 1px solid var(--border);
+  scroll-margin-top: 60px;
 }
 
 .installTitle {

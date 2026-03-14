@@ -22,18 +22,75 @@ export default function App() {
     <div className={styles.page}>
       {/* ── Nav ── */}
       <nav className={styles.nav}>
-        <img src="/kwtsms-logo.png" alt="kwtSMS" className={styles.navLogo} />
+        <img
+          src="/kwtsms-logo-nav.png"
+          alt="kwtSMS"
+          className={styles.navLogo}
+        />
         <ul className={styles.navLinks}>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#setup">Setup</a></li>
-          <li><a href="#roadmap">Roadmap</a></li>
-          <li><a href="#install" className={styles.navCta}>Install Free</a></li>
+          <li>
+            <a
+              href="#features"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("features")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Features
+            </a>
+          </li>
+          <li>
+            <a
+              href="#setup"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("setup")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Setup
+            </a>
+          </li>
+          <li>
+            <a
+              href="#roadmap"
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("roadmap")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Roadmap
+            </a>
+          </li>
+          <li>
+            <a
+              href="#install"
+              className={styles.navCta}
+              onClick={(e) => {
+                e.preventDefault();
+                document
+                  .getElementById("install")
+                  ?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Install Free
+            </a>
+          </li>
         </ul>
       </nav>
 
       {/* ── Hero ── */}
       <section className={styles.hero}>
-        <img src="/kwtsms-logo.png" alt="kwtSMS" className={styles.heroLogo} />
+        <img
+          src="/kwtsms-logo-hero.png"
+          alt="kwtSMS - You Send. We Deliver."
+          className={styles.heroLogo}
+        />
 
         <div className={styles.badge}>
           <span className={styles.badgeDot} />
@@ -52,7 +109,16 @@ export default function App() {
         </p>
 
         <div className={styles.heroActions}>
-          <a href="#install" className={styles.btnPrimary}>
+          <a
+            href="#install"
+            className={styles.btnPrimary}
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .getElementById("install")
+                ?.scrollIntoView({ behavior: "smooth" });
+            }}
+          >
             Install Free &rarr;
           </a>
           <a
@@ -73,12 +139,12 @@ export default function App() {
       {/* ── Stats ── */}
       <div className={styles.stats}>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>220+</div>
-          <div className={styles.statLabel}>Countries Covered</div>
+          <div className={styles.statNumber}>18 Years</div>
+          <div className={styles.statLabel}>Established Since 2007</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>2,700+</div>
-          <div className={styles.statLabel}>Companies Trust kwtSMS</div>
+          <div className={styles.statNumber}>99.8%</div>
+          <div className={styles.statLabel}>Delivery Rate</div>
         </div>
         <div className={styles.stat}>
           <div className={styles.statNumber}>&infin;</div>
@@ -91,7 +157,7 @@ export default function App() {
       </div>
 
       {/* ── Who gets SMS ── */}
-      <section className={`${styles.section} ${styles.sectionCenter}`}>
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
         <div className={styles.sectionLabel}>Recipients</div>
         <h2 className={styles.sectionTitle}>
           Notify both your customers and your team
@@ -139,7 +205,7 @@ export default function App() {
         <h2 className={styles.sectionTitle}>
           Everything you need to keep customers informed
         </h2>
-        <div style={{ marginBottom: "40px" }} />
+        <div style={{ marginBottom: "32px" }} />
 
         <div className={styles.features}>
           <div className={styles.feature}>
@@ -207,7 +273,7 @@ export default function App() {
         <h2 className={styles.sectionTitle}>
           6 events live, more coming soon
         </h2>
-        <div style={{ marginBottom: "40px" }} />
+        <div style={{ marginBottom: "32px" }} />
 
         <div className={styles.events}>
           <div className={styles.event}>
@@ -277,10 +343,10 @@ export default function App() {
       </section>
 
       {/* ── How it works ── */}
-      <section className={`${styles.section} ${styles.sectionCenter}`} id="setup">
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="setup">
         <div className={styles.sectionLabel}>Setup</div>
         <h2 className={styles.sectionTitle}>Up and running in 3 minutes</h2>
-        <div style={{ marginBottom: "40px" }} />
+        <div style={{ marginBottom: "24px" }} />
 
         <div className={styles.steps}>
           <div className={styles.step}>
@@ -322,7 +388,7 @@ export default function App() {
       <section className={styles.section} id="roadmap">
         <div className={styles.sectionLabel}>Roadmap</div>
         <h2 className={styles.sectionTitle}>What's coming next</h2>
-        <div style={{ marginBottom: "40px" }} />
+        <div style={{ marginBottom: "32px" }} />
 
         <div className={styles.roadmap}>
           <div className={styles.roadmapCard}>
