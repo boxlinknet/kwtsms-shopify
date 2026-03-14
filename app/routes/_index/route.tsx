@@ -73,16 +73,16 @@ export default function App() {
       {/* ── Stats ── */}
       <div className={styles.stats}>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>6</div>
-          <div className={styles.statLabel}>Notification Events</div>
+          <div className={styles.statNumber}>220+</div>
+          <div className={styles.statLabel}>Countries Covered</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>2</div>
-          <div className={styles.statLabel}>Languages (AR / EN)</div>
+          <div className={styles.statNumber}>2,700+</div>
+          <div className={styles.statLabel}>Companies Trust kwtSMS</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>33</div>
-          <div className={styles.statLabel}>Error Codes Handled</div>
+          <div className={styles.statNumber}>&infin;</div>
+          <div className={styles.statLabel}>Credits Never Expire</div>
         </div>
         <div className={styles.stat}>
           <div className={styles.statNumber}>$0</div>
