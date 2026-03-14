@@ -2,7 +2,6 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypt
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
-const TAG_LENGTH = 16;
 
 function getKey(): Buffer {
   const secret = process.env.SHOPIFY_API_SECRET;
