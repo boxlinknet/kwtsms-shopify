@@ -14,6 +14,7 @@ const shopify = shopifyApp({
   scopes: process.env.SCOPES?.split(","),
   appUrl: process.env.SHOPIFY_APP_URL || "",
   authPathPrefix: "/auth",
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore Duplicate @shopify/shopify-api versions cause type mismatch
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
