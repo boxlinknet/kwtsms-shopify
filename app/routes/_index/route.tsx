@@ -211,8 +211,10 @@ export default function App() {
 
         <div className={styles.features}>
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9993;</div>
-            <h3 className={styles.featureTitle}>Automatic SMS</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#9993;</div>
+              <h3 className={styles.featureTitle}>Automatic SMS</h3>
+            </div>
             <p className={styles.featureDesc}>
               Trigger SMS automatically on order creation, payment, shipping,
               partial fulfillment, cancellation, and new customer signup.
@@ -220,8 +222,10 @@ export default function App() {
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#1645;</div>
-            <h3 className={styles.featureTitle}>Arabic + English</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#1645;</div>
+              <h3 className={styles.featureTitle}>Arabic + English</h3>
+            </div>
             <p className={styles.featureDesc}>
               Bilingual templates with automatic language detection based on
               customer locale. Full RTL Arabic support built in.
@@ -229,8 +233,10 @@ export default function App() {
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9998;</div>
-            <h3 className={styles.featureTitle}>Custom Templates</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#9998;</div>
+              <h3 className={styles.featureTitle}>Custom Templates</h3>
+            </div>
             <p className={styles.featureDesc}>
               Edit every SMS template with placeholders for order number,
               customer name, total amount, tracking URL, and more.
@@ -238,8 +244,10 @@ export default function App() {
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9742;</div>
-            <h3 className={styles.featureTitle}>Smart Phone Handling</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#9742;</div>
+              <h3 className={styles.featureTitle}>Smart Phone Handling</h3>
+            </div>
             <p className={styles.featureDesc}>
               Automatic country code prepending, local format validation,
               and coverage checking before every send.
@@ -247,8 +255,10 @@ export default function App() {
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9783;</div>
-            <h3 className={styles.featureTitle}>Detailed SMS Logs</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#9783;</div>
+              <h3 className={styles.featureTitle}>Detailed SMS Logs</h3>
+            </div>
             <p className={styles.featureDesc}>
               Complete send history with delivery status, error codes, cost
               tracking, and filters by event type or phone.
@@ -256,8 +266,10 @@ export default function App() {
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9878;</div>
-            <h3 className={styles.featureTitle}>Balance Monitoring</h3>
+            <div className={styles.featureHeader}>
+              <div className={styles.featureIcon}>&#9878;</div>
+              <h3 className={styles.featureTitle}>Balance Monitoring</h3>
+            </div>
             <p className={styles.featureDesc}>
               Real-time SMS credit balance on every page with daily auto-sync.
               Coverage and sender ID management included.
