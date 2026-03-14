@@ -134,7 +134,7 @@ export default function App() {
         <p className={styles.priceTag}>
           <strong>100% Free app. Pay-as-you-go SMS. No contracts.</strong>
           <br />
-          Use your own private Sender ID so customers see your brand name, not a random number.
+          Use your own private Sender ID so customers see your brand name, not a random name or number.
         </p>
       </section>
 
