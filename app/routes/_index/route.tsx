@@ -147,7 +147,7 @@ export default function App() {
           <div className={styles.statLabel}>Delivery Rate</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>&infin;</div>
+          <div className={styles.statNumber}>No Expiry</div>
           <div className={styles.statLabel}>Credits Never Expire</div>
         </div>
         <div className={styles.stat}>
