@@ -355,6 +355,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 26px 22px;
+  text-align: left;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -377,9 +378,10 @@
 
 .featureTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   margin: 0 0 6px;
+  white-space: nowrap;
 }
 
 .featureDesc {
@@ -503,6 +505,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 26px 22px;
+  text-align: left;
 }
 
 .roadmapPhase {
