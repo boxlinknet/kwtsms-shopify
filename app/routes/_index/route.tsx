@@ -56,7 +56,7 @@ export default function App() {
             Install Free &rarr;
           </a>
           <a
-            href="https://kwtsms.com"
+            href="https://www.kwtsms.com"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.btnSecondary}
@@ -388,14 +388,14 @@ export default function App() {
       <footer className={styles.footer}>
         <div className={styles.footerLinks}>
           <a
-            href="https://kwtsms.com"
+            href="https://www.kwtsms.com"
             target="_blank"
             rel="noopener noreferrer"
           >
             kwtsms.com
           </a>
           <a
-            href="https://kwtsms.com/en/contact-us"
+            href="https://www.kwtsms.com/#contact"
             target="_blank"
             rel="noopener noreferrer"
           >

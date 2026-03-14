@@ -21,7 +21,6 @@
   color: var(--text);
   font-family: 'Lato', Helvetica, Arial, sans-serif;
   min-height: 100vh;
-  overflow-x: hidden;
 }
 
 /* ── Nav ── */
@@ -31,7 +30,8 @@
   justify-content: space-between;
   padding: 14px 32px;
   border-bottom: 1px solid var(--border);
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -82,8 +82,8 @@
 }
 
 .heroLogo {
-  height: 44px;
-  margin-bottom: 24px;
+  height: 72px;
+  margin-bottom: 28px;
   animation: fadeUp 0.5s ease both;
 }
 
@@ -264,7 +264,7 @@
   color: var(--text-light);
   line-height: 1.6;
   max-width: 500px;
-  margin: 0 auto 40px;
+  margin: 0 auto 28px;
 }
 
 /* ── Recipients (Admin + Customer) ── */
@@ -273,7 +273,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   max-width: 660px;
-  margin: 0 auto 52px;
+  margin: 0 auto;
 }
 
 .recipientCard {
