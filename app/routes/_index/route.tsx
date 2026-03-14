@@ -20,16 +20,20 @@ export default function App() {
 
   return (
     <div className={styles.page}>
+      {/* ── Nav ── */}
+      <nav className={styles.nav}>
+        <img src="/kwtsms-logo.png" alt="kwtSMS" className={styles.navLogo} />
+        <ul className={styles.navLinks}>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#setup">Setup</a></li>
+          <li><a href="#roadmap">Roadmap</a></li>
+          <li><a href="#install" className={styles.navCta}>Install Free</a></li>
+        </ul>
+      </nav>
+
       {/* ── Hero ── */}
       <section className={styles.hero}>
-        <div className={styles.heroPattern} />
-        <div className={styles.heroGlow} />
-
-        <img
-          src="https://www.kwtsms.com/images/kwtsms_logo_30.png"
-          alt="kwtSMS"
-          className={styles.heroLogo}
-        />
+        <img src="/kwtsms-logo.png" alt="kwtSMS" className={styles.heroLogo} />
 
         <div className={styles.badge}>
           <span className={styles.badgeDot} />
@@ -43,14 +47,23 @@ export default function App() {
 
         <p className={styles.heroSub}>
           Connect your Shopify store to the kwtSMS gateway. Send order
-          confirmations, shipping updates, and more to your customers in
-          Kuwait and the Middle East, in Arabic and English.
+          confirmations, shipping updates, and more to customers and admins
+          in Kuwait and the Middle East, in Arabic and English.
         </p>
 
-        <a href="#install" className={styles.heroCta}>
-          Install Free
-          <span className={styles.heroCtaArrow}>&rarr;</span>
-        </a>
+        <div className={styles.heroActions}>
+          <a href="#install" className={styles.btnPrimary}>
+            Install Free &rarr;
+          </a>
+          <a
+            href="https://kwtsms.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.btnSecondary}
+          >
+            About kwtSMS
+          </a>
+        </div>
 
         <span className={styles.priceTag}>
           No subscription. No hidden fees. You only pay for SMS credits.
@@ -72,17 +85,61 @@ export default function App() {
           <div className={styles.statLabel}>Error Codes Handled</div>
         </div>
         <div className={styles.stat}>
-          <div className={styles.statNumber}>0</div>
+          <div className={styles.statNumber}>$0</div>
           <div className={styles.statLabel}>Monthly Fee</div>
         </div>
       </div>
 
+      {/* ── Who gets SMS ── */}
+      <section className={`${styles.section} ${styles.sectionCenter}`}>
+        <div className={styles.sectionLabel}>Recipients</div>
+        <h2 className={styles.sectionTitle}>
+          Notify both your customers and your team
+        </h2>
+        <p className={styles.sectionSub}>
+          Each notification event can send SMS to customers, store admins, or
+          both. You control who gets notified for each event.
+        </p>
+
+        <div className={styles.recipients}>
+          <div className={styles.recipientCard}>
+            <div
+              className={`${styles.recipientIcon} ${styles.recipientIconCustomer}`}
+            >
+              &#128100;
+            </div>
+            <div>
+              <h3 className={styles.recipientTitle}>Customer SMS</h3>
+              <p className={styles.recipientDesc}>
+                Order confirmations, shipping updates, and cancellation notices
+                sent directly to your customer's phone number.
+              </p>
+            </div>
+          </div>
+          <div className={styles.recipientCard}>
+            <div
+              className={`${styles.recipientIcon} ${styles.recipientIconAdmin}`}
+            >
+              &#128188;
+            </div>
+            <div>
+              <h3 className={styles.recipientTitle}>Admin SMS</h3>
+              <p className={styles.recipientDesc}>
+                Get instant alerts on your phone when a new order comes in,
+                gets paid, or is cancelled. Never miss an order.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ── */}
-      <section className={styles.section}>
+      <section className={styles.section} id="features">
         <div className={styles.sectionLabel}>Features</div>
         <h2 className={styles.sectionTitle}>
-          Everything you need to keep your customers informed
+          Everything you need to keep customers informed
         </h2>
+        <div style={{ marginBottom: "40px" }} />
 
         <div className={styles.features}>
           <div className={styles.feature}>
@@ -99,16 +156,16 @@ export default function App() {
             <h3 className={styles.featureTitle}>Arabic + English</h3>
             <p className={styles.featureDesc}>
               Bilingual templates with automatic language detection based on
-              customer locale. Full RTL Arabic support.
+              customer locale. Full RTL Arabic support built in.
             </p>
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9881;</div>
-            <h3 className={styles.featureTitle}>Customizable Templates</h3>
+            <div className={styles.featureIcon}>&#9998;</div>
+            <h3 className={styles.featureTitle}>Custom Templates</h3>
             <p className={styles.featureDesc}>
               Edit every SMS template with placeholders for order number,
-              customer name, total, tracking URL, and more.
+              customer name, total amount, tracking URL, and more.
             </p>
           </div>
 
@@ -123,78 +180,111 @@ export default function App() {
 
           <div className={styles.feature}>
             <div className={styles.featureIcon}>&#9783;</div>
-            <h3 className={styles.featureTitle}>SMS Logs</h3>
+            <h3 className={styles.featureTitle}>Detailed SMS Logs</h3>
             <p className={styles.featureDesc}>
-              Complete send history with status, error codes, cost tracking,
-              and filters by event type, date, and phone number.
+              Complete send history with delivery status, error codes, cost
+              tracking, and filters by event type or phone.
             </p>
           </div>
 
           <div className={styles.feature}>
-            <div className={styles.featureIcon}>&#9888;</div>
+            <div className={styles.featureIcon}>&#9878;</div>
             <h3 className={styles.featureTitle}>Balance Monitoring</h3>
             <p className={styles.featureDesc}>
-              Real-time SMS credit balance displayed on every page. Daily
-              auto-sync keeps your balance up to date.
+              Real-time SMS credit balance on every page with daily auto-sync.
+              Coverage and sender ID management included.
             </p>
           </div>
         </div>
       </section>
 
       {/* ── Notification Events ── */}
-      <section className={styles.section}>
+      <section
+        className={`${styles.section} ${styles.sectionCenter}`}
+        style={{ background: "var(--bg-alt)" }}
+      >
         <div className={styles.sectionLabel}>Notifications</div>
         <h2 className={styles.sectionTitle}>
           6 events live, more coming soon
         </h2>
+        <div style={{ marginBottom: "40px" }} />
 
         <div className={styles.events}>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Order Created
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Order Paid
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Order Shipped
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Partially Fulfilled
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Order Cancelled
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={styles.event}>
             <span className={styles.eventDot} />
             Customer Created
+            <span className={`${styles.eventLabel} ${styles.eventLabelLive}`}>
+              Live
+            </span>
           </div>
           <div className={`${styles.event} ${styles.eventSoon}`}>
             <span className={styles.eventDotSoon} />
-            Low Stock Alert (soon)
+            Low Stock Alert
+            <span className={`${styles.eventLabel} ${styles.eventLabelSoon}`}>
+              Soon
+            </span>
           </div>
           <div className={`${styles.event} ${styles.eventSoon}`}>
             <span className={styles.eventDotSoon} />
-            Abandoned Cart (soon)
+            Abandoned Cart
+            <span className={`${styles.eventLabel} ${styles.eventLabelSoon}`}>
+              Soon
+            </span>
           </div>
           <div className={`${styles.event} ${styles.eventSoon}`}>
             <span className={styles.eventDotSoon} />
-            Fulfillment Tracking (soon)
+            Fulfillment Tracking
+            <span className={`${styles.eventLabel} ${styles.eventLabelSoon}`}>
+              Soon
+            </span>
           </div>
         </div>
       </section>
 
       {/* ── How it works ── */}
-      <section className={styles.section}>
+      <section className={`${styles.section} ${styles.sectionCenter}`} id="setup">
         <div className={styles.sectionLabel}>Setup</div>
         <h2 className={styles.sectionTitle}>Up and running in 3 minutes</h2>
+        <div style={{ marginBottom: "40px" }} />
 
         <div className={styles.steps}>
           <div className={styles.step}>
+            <div className={styles.stepNumber}>1</div>
             <h3 className={styles.stepTitle}>Install the App</h3>
             <p className={styles.stepDesc}>
               Find kwtSMS in the Shopify App Store and click Install. No
@@ -202,33 +292,37 @@ export default function App() {
             </p>
           </div>
           <div className={styles.step}>
+            <div className={styles.stepNumber}>2</div>
             <h3 className={styles.stepTitle}>Connect kwtSMS</h3>
             <p className={styles.stepDesc}>
-              Enter your kwtSMS API credentials. The app verifies your
-              account and loads your sender IDs and coverage.
+              Enter your kwtSMS API credentials. The app verifies your account
+              and loads sender IDs and coverage.
             </p>
           </div>
           <div className={styles.step}>
+            <div className={styles.stepNumber}>3</div>
             <h3 className={styles.stepTitle}>Customize Templates</h3>
             <p className={styles.stepDesc}>
-              Edit the Arabic and English SMS templates for each event, or
-              use the defaults. Enable or disable events as needed.
+              Edit Arabic and English templates for each event, or use the
+              ready-made defaults.
             </p>
           </div>
           <div className={styles.step}>
+            <div className={styles.stepNumber}>4</div>
             <h3 className={styles.stepTitle}>Start Sending</h3>
             <p className={styles.stepDesc}>
-              That's it. Every new order, shipment, or cancellation
-              automatically triggers an SMS to your customer.
+              Done. Every new order, shipment, or cancellation triggers an SMS
+              to your customer or admin.
             </p>
           </div>
         </div>
       </section>
 
       {/* ── Roadmap ── */}
-      <section className={styles.section}>
+      <section className={styles.section} id="roadmap">
         <div className={styles.sectionLabel}>Roadmap</div>
         <h2 className={styles.sectionTitle}>What's coming next</h2>
+        <div style={{ marginBottom: "40px" }} />
 
         <div className={styles.roadmap}>
           <div className={styles.roadmapCard}>
@@ -266,10 +360,9 @@ export default function App() {
 
       {/* ── Install CTA ── */}
       <section className={styles.install} id="install">
-        <div className={styles.installGlow} />
         <h2 className={styles.installTitle}>Ready to connect your store?</h2>
         <p className={styles.installSub}>
-          Enter your Shopify store domain to install the app.
+          Enter your Shopify store domain to install the app. It's free.
         </p>
 
         {showForm && (
