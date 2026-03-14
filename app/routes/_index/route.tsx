@@ -200,7 +200,7 @@ export default function App() {
       </section>
 
       {/* ── Features ── */}
-      <section className={styles.section} id="features">
+      <section className={`${styles.section} ${styles.sectionCompact}`} id="features">
         <div className={styles.sectionLabel}>Features</div>
         <h2 className={styles.sectionTitle}>
           Everything you need to keep customers informed
@@ -385,7 +385,7 @@ export default function App() {
       </section>
 
       {/* ── Roadmap ── */}
-      <section className={styles.section} id="roadmap">
+      <section className={`${styles.section} ${styles.sectionCompact}`} id="roadmap">
         <div className={styles.sectionLabel}>Roadmap</div>
         <h2 className={styles.sectionTitle}>What's coming next</h2>
         <div style={{ marginBottom: "32px" }} />
