@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model Session {
@@ -34,8 +34,8 @@ model GatewayCredentials {
   password            String
   senderId            String    @default("")
   testMode            Boolean   @default(true)
-  senderIds           String    @default("[]")
-  coverage            String    @default("[]")
+  senderIds           String    @default("[]") @db.Text
+  coverage            String    @default("[]") @db.Text
   balanceAvailable    Float     @default(0)
   balancePurchased    Float     @default(0)
   balanceUpdatedAt    DateTime?
@@ -48,7 +48,7 @@ model Settings {
   id        Int      @id @default(autoincrement())
   shop      String
   key       String
-  value     String
+  value     String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -61,8 +61,8 @@ model SmsTemplate {
   shop          String
   eventType     String
   enabled       Boolean  @default(true)
-  templateEn    String
-  templateAr    String
+  templateEn    String   @db.Text
+  templateAr    String   @db.Text
   recipientType String   @default("customer")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -76,7 +76,7 @@ model SmsLog {
   shop             String
   eventType        String
   phone            String
-  message          String
+  message          String   @db.Text
   senderId         String
   status           String
   msgId            String?
@@ -84,7 +84,7 @@ model SmsLog {
   balanceAfter     Float?
   errorCode        String?
   errorDescription String?
-  apiResponse      String?
+  apiResponse      String?  @db.Text
   testMode         Boolean  @default(false)
   createdAt        DateTime @default(now())
 

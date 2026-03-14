@@ -1,5 +1,6 @@
 {
   "name": "kwtsms",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "build": "react-router build",
