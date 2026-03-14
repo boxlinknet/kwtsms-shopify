@@ -12,7 +12,7 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   order_shipped: "Order Shipped",
   order_cancelled: "Order Cancelled",
   order_partially_fulfilled: "Order Partially Fulfilled",
-  customer_created: "New Customer (Welcome SMS)",
+  customer_created: "New Customer (Welcome)",
 };
 
 const RECIPIENT_OPTIONS = [

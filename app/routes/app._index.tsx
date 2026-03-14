@@ -148,7 +148,7 @@ export default function SettingsPage() {
             Choose which order events should trigger SMS notifications.
           </s-paragraph>
           <s-checkbox
-            label="New Customer (Welcome SMS)"
+            label="New Customer (Welcome)"
             checked={customerCreated || undefined}
             onChange={() => setCustomerCreated(!customerCreated)}
           />
