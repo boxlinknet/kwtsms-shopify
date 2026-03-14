@@ -85,7 +85,7 @@
 }
 
 .heroLogo {
-  height: 56px;
+  height: 80px;
   margin-bottom: 28px;
   display: block;
   margin-left: auto;
@@ -260,14 +260,14 @@
   color: var(--primary);
   text-transform: uppercase;
   letter-spacing: 2.5px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .sectionTitle {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  font-weight: 700;
-  line-height: 1.25;
+  font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+  font-weight: 800;
+  line-height: 1.2;
   margin: 0 0 14px;
 }
 

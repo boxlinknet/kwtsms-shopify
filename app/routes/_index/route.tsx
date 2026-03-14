@@ -158,7 +158,7 @@ export default function App() {
 
       {/* ── Who gets SMS ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
-
+        <div className={styles.sectionLabel}>Recipients</div>
         <h2 className={styles.sectionTitle}>
           Notify both your customers and your team
         </h2>
@@ -200,7 +200,7 @@ export default function App() {
       </section>
 
       {/* ── Features ── */}
-      <section className={`${styles.section} ${styles.sectionCompact}`} id="features">
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="features">
         <div className={styles.sectionLabel}>Features</div>
         <h2 className={styles.sectionTitle}>
           Everything you need to keep customers informed
@@ -344,7 +344,7 @@ export default function App() {
 
       {/* ── How it works ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="setup">
-
+        <div className={styles.sectionLabel}>Setup</div>
         <h2 className={styles.sectionTitle}>Up and running in 3 minutes</h2>
         <div style={{ marginBottom: "24px" }} />
 
@@ -385,7 +385,7 @@ export default function App() {
       </section>
 
       {/* ── Roadmap ── */}
-      <section className={`${styles.section} ${styles.sectionCompact}`} id="roadmap">
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="roadmap">
         <div className={styles.sectionLabel}>Roadmap</div>
         <h2 className={styles.sectionTitle}>What's coming next</h2>
         <div style={{ marginBottom: "32px" }} />
