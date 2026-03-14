@@ -180,7 +180,7 @@ export default function App() {
               <h3 className={styles.recipientTitle}>Customer SMS</h3>
               <p className={styles.recipientDesc}>
                 Order confirmations, shipping updates, and cancellation notices
-                sent directly to your customer's phone number.
+                sent directly to your customer&apos;s phone number.
               </p>
             </div>
           </div>
@@ -389,7 +389,7 @@ export default function App() {
       {/* ── Roadmap ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="roadmap">
         <div className={styles.sectionLabel}>Roadmap</div>
-        <h2 className={styles.sectionTitle}>What's coming next</h2>
+        <h2 className={styles.sectionTitle}>What&apos;s coming next</h2>
         <div style={{ marginBottom: "32px" }} />
 
         <div className={styles.roadmap}>
@@ -430,7 +430,7 @@ export default function App() {
       <section className={styles.install} id="install">
         <h2 className={styles.installTitle}>Ready to connect your store?</h2>
         <p className={styles.installSub}>
-          Enter your Shopify store domain to install the app. It's free.
+          Enter your Shopify store domain to install the app. It&apos;s free.
         </p>
 
         {showForm && (
