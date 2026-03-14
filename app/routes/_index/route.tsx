@@ -87,7 +87,7 @@ export default function App() {
       {/* ── Hero ── */}
       <section className={styles.hero}>
         <img
-          src="/kwtsms-logo-hero.png"
+          src="/kwtsms-logo-nav.png"
           alt="kwtSMS - You Send. We Deliver."
           className={styles.heroLogo}
         />
