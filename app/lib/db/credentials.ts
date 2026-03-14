@@ -42,6 +42,8 @@ export async function saveCredentials(
       shop,
       username: data.username ?? "",
       password: data.password ? encrypt(data.password) : "",
+      senderIds: "[]",
+      coverage: "[]",
       ...updateData,
     },
     update: updateData,

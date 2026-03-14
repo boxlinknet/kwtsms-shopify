@@ -34,8 +34,8 @@ model GatewayCredentials {
   password            String
   senderId            String    @default("")
   testMode            Boolean   @default(true)
-  senderIds           String    @default("[]") @db.Text
-  coverage            String    @default("[]") @db.Text
+  senderIds           String    @db.Text
+  coverage            String    @db.Text
   balanceAvailable    Float     @default(0)
   balancePurchased    Float     @default(0)
   balanceUpdatedAt    DateTime?
