@@ -21,36 +21,47 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <div className={styles.logo}>SMS</div>
+        <h1 className={styles.heading}>kwtSMS for Shopify</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Automated SMS notifications for your Shopify store via the kwtSMS
+          gateway. Reach your customers in Kuwait and the Middle East with
+          bilingual Arabic and English messages.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
             <label className={styles.label}>
               <span>Shop domain</span>
-              <input className={styles.input} type="text" name="shop" />
-              <span>e.g: my-shop-domain.myshopify.com</span>
+              <input
+                className={styles.input}
+                type="text"
+                name="shop"
+                placeholder="your-store.myshopify.com"
+              />
             </label>
             <button className={styles.button} type="submit">
-              Log in
+              Install App
             </button>
           </Form>
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Order Notifications</strong>. Automatically send SMS for
+            order confirmations, payments, shipping updates, and cancellations.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Bilingual Templates</strong>. Customizable Arabic and
+            English templates with auto-detection of customer language
+            preference.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Real-time Monitoring</strong>. Track SMS delivery, monitor
+            your balance, and view detailed logs for every message sent.
           </li>
         </ul>
+        <p className={styles.footer}>
+          Powered by <a href="https://kwtsms.com" target="_blank" rel="noopener noreferrer">kwtsms.com</a>
+        </p>
       </div>
     </div>
   );
