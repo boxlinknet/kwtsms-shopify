@@ -223,11 +223,7 @@ export default function LogsPage() {
                   </s-table-cell>
                   <s-table-cell>{log.senderId}</s-table-cell>
                   <s-table-cell>{log.phoneMasked}</s-table-cell>
-                  <s-table-cell>
-                    <s-badge tone={log.recipientType === "admin" ? "caution" : "info"}>
-                      {log.recipientType ?? "customer"}
-                    </s-badge>
-                  </s-table-cell>
+                  <s-table-cell>{log.recipientType ?? "customer"}</s-table-cell>
                   <s-table-cell>{log.eventType}</s-table-cell>
                   <s-table-cell>
                     <span title={log.status === "failed" || log.status === "skipped" ? `${log.errorCode ?? ""}: ${log.errorDescription ?? "Unknown error"}` : ""}>
