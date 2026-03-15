@@ -360,14 +360,7 @@ export default function GatewaySettings() {
               <s-button type="submit" variant="primary">Send Test SMS</s-button>
             </Form>
 
-            {actionData?.intent === "send_test" && actionData.ok && actionData.testResult && (
-              <s-section>
-                <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Test Result</h2>
-                <s-paragraph>Message ID: {actionData.testResult.msgId}</s-paragraph>
-                <s-paragraph>Numbers: {actionData.testResult.numbers}</s-paragraph>
-                <s-paragraph>Points charged: {actionData.testResult.pointsCharged}</s-paragraph>
-              </s-section>
-            )}
+            {/* Test Result section hidden for now */}
           </s-section>
         </>
       )}

@@ -211,6 +211,7 @@ export default function LogsPage() {
               <s-table-header listSlot="kicker">Date</s-table-header>
               <s-table-header listSlot="primary">Sender ID</s-table-header>
               <s-table-header listSlot="secondary">Phone</s-table-header>
+              <s-table-header listSlot="labeled">To</s-table-header>
               <s-table-header listSlot="labeled">Event</s-table-header>
               <s-table-header listSlot="labeled">Status</s-table-header>
             </s-table-header-row>
@@ -222,11 +223,18 @@ export default function LogsPage() {
                   </s-table-cell>
                   <s-table-cell>{log.senderId}</s-table-cell>
                   <s-table-cell>{log.phoneMasked}</s-table-cell>
+                  <s-table-cell>
+                    <s-badge tone={log.recipientType === "admin" ? "caution" : "info"}>
+                      {log.recipientType ?? "customer"}
+                    </s-badge>
+                  </s-table-cell>
                   <s-table-cell>{log.eventType}</s-table-cell>
                   <s-table-cell>
-                    <s-badge tone={statusBadgeTone(log.status)}>
-                      {log.status}
-                    </s-badge>
+                    <span title={log.status === "failed" || log.status === "skipped" ? `${log.errorCode ?? ""}: ${log.errorDescription ?? "Unknown error"}` : ""}>
+                      <s-badge tone={statusBadgeTone(log.status)}>
+                        {log.status}
+                      </s-badge>
+                    </span>
                   </s-table-cell>
                 </s-table-row>
               ))}

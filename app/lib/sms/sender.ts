@@ -20,6 +20,7 @@ export async function sendSms(params: {
   eventType: string;
   senderId?: string;
   testMode?: boolean;
+  recipientType?: string;
 }): Promise<SendResult> {
   const { shop, phone, message, eventType } = params;
   const debug = (await getSetting(shop, "debug_logging")) === "true";
@@ -37,6 +38,7 @@ export async function sendSms(params: {
       shop,
       eventType,
       phone: phone,
+      recipientType: params.recipientType ?? "customer",
       message,
       senderId: params.senderId ?? "",
       status: "failed",
@@ -54,6 +56,7 @@ export async function sendSms(params: {
       shop,
       eventType,
       phone: phoneResult.normalized,
+      recipientType: params.recipientType ?? "customer",
       message,
       senderId: params.senderId ?? "",
       status: "failed",
@@ -82,6 +85,7 @@ export async function sendSms(params: {
         phone: phoneResult.normalized,
         message,
         senderId: params.senderId ?? creds.senderId,
+        recipientType: params.recipientType ?? "customer",
         status: "skipped",
         errorCode: "NO_COVERAGE",
         errorDescription: "Country not in coverage list",
@@ -113,6 +117,7 @@ export async function sendSms(params: {
       phone: phoneResult.normalized,
       message: cleanMessage(message),
       senderId: params.senderId ?? creds.senderId,
+      recipientType: params.recipientType ?? "customer",
       status: "sent",
       msgId: result.data["msg-id"],
       pointsCharged: result.data["points-charged"],
@@ -142,6 +147,7 @@ export async function sendSms(params: {
     shop,
     eventType,
     phone: phoneResult.normalized,
+    recipientType: params.recipientType ?? "customer",
     message: cleanMessage(message),
     senderId: params.senderId ?? creds.senderId,
     status: "failed",
@@ -203,14 +209,14 @@ export async function sendNotification(params: {
 
   // Send to customer
   if (recipientType === "customer" || recipientType === "both") {
-    results.push(await sendSms({ shop, phone, message, eventType }));
+    results.push(await sendSms({ shop, phone, message, eventType, recipientType: "customer" }));
   }
 
   // Send to admin
   if (recipientType === "admin" || recipientType === "both") {
     const adminPhone = await getSetting(shop, "admin_phone");
     if (adminPhone) {
-      results.push(await sendSms({ shop, phone: adminPhone, message, eventType }));
+      results.push(await sendSms({ shop, phone: adminPhone, message, eventType, recipientType: "admin" }));
     } else {
       console.warn(`[sendNotification] recipientType=${recipientType} but no admin_phone configured for ${shop}`);
     }
