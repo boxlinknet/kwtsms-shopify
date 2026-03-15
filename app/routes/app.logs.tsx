@@ -139,7 +139,7 @@ export default function LogsPage() {
       {/* Filters and actions */}
       <s-section>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Filters</h2>
-        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr">
+        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr" gap="base">
           <s-grid-item>
             <s-select
               label="Status"
