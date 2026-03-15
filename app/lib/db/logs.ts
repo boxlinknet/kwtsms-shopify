@@ -22,6 +22,7 @@ export async function createLog(data: {
   shop: string;
   eventType: string;
   phone: string;
+  recipientType?: string;
   message: string;
   senderId: string;
   status: string;
@@ -77,6 +78,7 @@ function formatLog(log: {
   shop: string;
   eventType: string;
   phone: string;
+  recipientType: string;
   message: string;
   senderId: string;
   status: string;

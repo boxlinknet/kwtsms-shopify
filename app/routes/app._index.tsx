@@ -77,7 +77,7 @@ export default function SettingsPage() {
   const [adminPhone, setAdminPhone] = useState(settings.admin_phone ?? "");
   const [countryCode, setCountryCode] = useState(settings.default_country_code ?? "965");
   const [language, setLanguage] = useState(settings.default_language || "en");
-  const [debugLogging, setDebugLogging] = useState(settings.debug_logging === "true");
+  const debugLogging = settings.debug_logging === "true";
 
   return (
     <s-page heading="kwtSMS Settings">
@@ -221,19 +221,6 @@ export default function SettingsPage() {
             <s-option value="en">English</s-option>
             <s-option value="ar">Arabic</s-option>
           </s-select>
-        </s-section>
-
-        <div style={{ marginTop: "16px" }} />
-        <s-section>
-          <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Developer Options</h2>
-          <s-checkbox
-            label="Debug logging"
-            checked={debugLogging || undefined}
-            onChange={() => setDebugLogging(!debugLogging)}
-          />
-          <s-paragraph>
-            When enabled, detailed SMS logs are printed to the server console for troubleshooting.
-          </s-paragraph>
         </s-section>
 
         <div style={{ marginTop: "16px" }} />

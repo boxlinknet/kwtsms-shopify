@@ -76,6 +76,7 @@ model SmsLog {
   shop             String
   eventType        String
   phone            String
+  recipientType    String   @default("customer")
   message          String   @db.Text
   senderId         String
   status           String
