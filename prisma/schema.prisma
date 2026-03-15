@@ -8,13 +8,13 @@ datasource db {
 }
 
 model Session {
-  id            String    @id @db.VarChar(255)
+  id            String    @id @db.VarChar(200)
   shop          String    @db.VarChar(100)
-  state         String    @db.VarChar(255)
+  state         String    @db.VarChar(200)
   isOnline      Boolean   @default(false)
-  scope         String?   @db.VarChar(255)
+  scope         String?   @db.Text
   expires       DateTime?
-  accessToken   String    @db.VarChar(255)
+  accessToken   String    @db.Text
   userId        BigInt?
   firstName     String?   @db.VarChar(100)
   lastName      String?   @db.VarChar(100)
@@ -23,7 +23,7 @@ model Session {
   locale        String?   @db.VarChar(10)
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
-  refreshToken        String?  @db.VarChar(255)
+  refreshToken        String?  @db.Text
   refreshTokenExpires DateTime?
 }
 
