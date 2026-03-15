@@ -10,10 +10,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const status = url.searchParams.get("status") || undefined;
   const eventType = url.searchParams.get("eventType") || undefined;
+  const recipientType = url.searchParams.get("recipientType") || undefined;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
 
   const [logsResult, stats] = await Promise.all([
-    getLogs(session.shop, { status, eventType, page, pageSize: 20 }),
+    getLogs(session.shop, { status, eventType, recipientType, page, pageSize: 20 }),
     getLogStats(session.shop),
   ]);
 
@@ -48,6 +49,7 @@ export default function LogsPage() {
 
   const statusFilter = searchParams.get("status") || "";
   const eventTypeFilter = searchParams.get("eventType") || "";
+  const recipientTypeFilter = searchParams.get("recipientType") || "";
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
@@ -137,7 +139,7 @@ export default function LogsPage() {
       {/* Filters and actions */}
       <s-section>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Filters</h2>
-        <s-grid gridTemplateColumns="1fr 1fr 1fr">
+        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr">
           <s-grid-item>
             <s-select
               label="Status"
@@ -150,7 +152,6 @@ export default function LogsPage() {
               <s-option value="">All Statuses</s-option>
               <s-option value="sent">Sent</s-option>
               <s-option value="failed">Failed</s-option>
-              <s-option value="test">Test</s-option>
               <s-option value="skipped">Skipped</s-option>
             </s-select>
           </s-grid-item>
@@ -166,12 +167,28 @@ export default function LogsPage() {
               <s-option value="">All Events</s-option>
               <s-option value="order_created">Order Created</s-option>
               <s-option value="order_paid">Order Paid</s-option>
+              <s-option value="order_shipped">Order Shipped</s-option>
+              <s-option value="order_partially_fulfilled">Partially Fulfilled</s-option>
               <s-option value="order_fulfilled">Order Fulfilled</s-option>
               <s-option value="order_cancelled">Order Cancelled</s-option>
-              <s-option value="order_partially_fulfilled">Partially Fulfilled</s-option>
-              <s-option value="customer_created">Customer Created</s-option>
+              <s-option value="fulfillment_created">Fulfillment Created</s-option>
               <s-option value="fulfillment_updated">Fulfillment Updated</s-option>
-              <s-option value="customer_created">Customer Created</s-option>
+              <s-option value="customer_created">New Customer</s-option>
+              <s-option value="test">Test</s-option>
+            </s-select>
+          </s-grid-item>
+          <s-grid-item>
+            <s-select
+              label="Recipient"
+              value={recipientTypeFilter}
+              onChange={(e: Event) => {
+                const target = e.target as HTMLSelectElement;
+                updateFilter("recipientType", target.value);
+              }}
+            >
+              <s-option value="">All Recipients</s-option>
+              <s-option value="customer">Customer</s-option>
+              <s-option value="admin">Admin</s-option>
             </s-select>
           </s-grid-item>
           <s-grid-item>

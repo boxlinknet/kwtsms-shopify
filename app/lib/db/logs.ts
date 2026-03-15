@@ -4,6 +4,7 @@ import { maskPhone } from "../kwtsms/phone";
 export interface LogFilters {
   status?: string;
   eventType?: string;
+  recipientType?: string;
   dateFrom?: Date;
   dateTo?: Date;
   phone?: string;
@@ -47,6 +48,7 @@ export async function getLogs(
 
   if (filters.status) where.status = filters.status;
   if (filters.eventType) where.eventType = filters.eventType;
+  if (filters.recipientType) where.recipientType = filters.recipientType;
   if (filters.dateFrom || filters.dateTo) {
     const dateFilter: Record<string, Date> = {};
     if (filters.dateFrom) dateFilter.gte = filters.dateFrom;
