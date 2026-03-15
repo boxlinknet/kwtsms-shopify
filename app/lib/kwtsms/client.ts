@@ -86,14 +86,14 @@ export class KwtSmsClient {
 
     // Single batch (200 or fewer): one API call
     if (normalized.length <= BATCH_SIZE) {
-      return this._sendBatch(normalized, cleanedMessage, sender, testFlag);
+      return this._sendOnce(normalized, cleanedMessage, sender, testFlag);
     }
 
     // Multiple batches: chunk and delay
     return this._sendBulk(normalized, cleanedMessage, sender, testFlag);
   }
 
-  private async _sendBatch(
+  private async _sendOnce(
     phones: string[],
     message: string,
     sender: string,
@@ -124,7 +124,7 @@ export class KwtSmsClient {
     let lastBalance = 0;
 
     for (let i = 0; i < chunks.length; i++) {
-      const result = await this._sendBatch(chunks[i], message, sender, test);
+      const result = await this._sendOnce(chunks[i], message, sender, test);
       if (!result.ok) {
         return result;
       }
