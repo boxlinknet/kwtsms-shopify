@@ -248,22 +248,27 @@ export default function GatewaySettings() {
               autocomplete="off"
             />
             <div>
-              <label style={{ display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>Password</label>
-              <input
-                type="password"
-                name="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                autoComplete="off"
-                style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  fontSize: "14px",
-                  border: "1px solid #c9cdd6",
-                  borderRadius: "8px",
-                  boxSizing: "border-box",
-                }}
-              />
+              {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+              <label style={{ display: "block", fontSize: "14px", fontWeight: 600, marginBottom: "4px" }}>
+                Password
+                <input
+                  type="password"
+                  name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="off"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "8px 12px",
+                    fontSize: "14px",
+                    border: "1px solid #c9cdd6",
+                    borderRadius: "8px",
+                    boxSizing: "border-box",
+                    marginTop: "4px",
+                  }}
+                />
+              </label>
             </div>
             <br />
             <s-button variant="primary" type="submit">Login</s-button>
