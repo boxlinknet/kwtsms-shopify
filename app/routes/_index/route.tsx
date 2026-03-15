@@ -158,49 +158,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ── Who gets SMS ── */}
-      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
-        <div className={styles.sectionLabel}>Recipients</div>
-        <h2 className={styles.sectionTitle}>
-          Notify both your customers and your team
-        </h2>
-        <p className={styles.sectionSub}>
-          Each notification event can send SMS to customers, store admins, or
-          both. You control who gets notified for each event.
-        </p>
-
-        <div className={styles.recipients}>
-          <div className={styles.recipientCard}>
-            <div
-              className={`${styles.recipientIcon} ${styles.recipientIconCustomer}`}
-            >
-              &#128100;
-            </div>
-            <div>
-              <h3 className={styles.recipientTitle}>Customer SMS</h3>
-              <p className={styles.recipientDesc}>
-                Order confirmations, shipping updates, and cancellation notices
-                sent directly to your customer&apos;s phone number.
-              </p>
-            </div>
-          </div>
-          <div className={styles.recipientCard}>
-            <div
-              className={`${styles.recipientIcon} ${styles.recipientIconAdmin}`}
-            >
-              &#128188;
-            </div>
-            <div>
-              <h3 className={styles.recipientTitle}>Admin SMS</h3>
-              <p className={styles.recipientDesc}>
-                Get instant alerts on your phone when a new order comes in,
-                gets paid, or is cancelled. Never miss an order.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ── Features ── */}
       <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`} id="features">
         <div className={styles.sectionLabel}>Features</div>
@@ -274,6 +231,49 @@ export default function App() {
               Real-time SMS credit balance on every page with daily auto-sync.
               Coverage and sender ID management included.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Who gets SMS ── */}
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
+        <div className={styles.sectionLabel}>Recipients</div>
+        <h2 className={styles.sectionTitle}>
+          Notify both your customers and your team
+        </h2>
+        <p className={styles.sectionSub}>
+          Each notification event can send SMS to customers, store admins, or
+          both. You control who gets notified for each event.
+        </p>
+
+        <div className={styles.recipients}>
+          <div className={styles.recipientCard}>
+            <div
+              className={`${styles.recipientIcon} ${styles.recipientIconCustomer}`}
+            >
+              &#128100;
+            </div>
+            <div>
+              <h3 className={styles.recipientTitle}>Customer SMS</h3>
+              <p className={styles.recipientDesc}>
+                Order confirmations, shipping updates, and cancellation notices
+                sent directly to your customer&apos;s phone number.
+              </p>
+            </div>
+          </div>
+          <div className={styles.recipientCard}>
+            <div
+              className={`${styles.recipientIcon} ${styles.recipientIconAdmin}`}
+            >
+              &#128188;
+            </div>
+            <div>
+              <h3 className={styles.recipientTitle}>Admin SMS</h3>
+              <p className={styles.recipientDesc}>
+                Get instant alerts on your phone when a new order comes in,
+                gets paid, or is cancelled. Never miss an order.
+              </p>
+            </div>
           </div>
         </div>
       </section>
