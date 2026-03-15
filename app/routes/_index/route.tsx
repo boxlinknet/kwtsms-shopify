@@ -481,6 +481,7 @@ export default function App() {
           >
             Support
           </a>
+          <a href="/privacy">Privacy Policy</a>
         </div>
         <p>
           kwtSMS for Shopify is a free app by kwtSMS. You only pay for SMS
