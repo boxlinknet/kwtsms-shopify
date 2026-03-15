@@ -8,31 +8,31 @@ datasource db {
 }
 
 model Session {
-  id            String    @id
-  shop          String
-  state         String
+  id            String    @id @db.VarChar(255)
+  shop          String    @db.VarChar(100)
+  state         String    @db.VarChar(255)
   isOnline      Boolean   @default(false)
-  scope         String?
+  scope         String?   @db.VarChar(255)
   expires       DateTime?
-  accessToken   String
+  accessToken   String    @db.VarChar(255)
   userId        BigInt?
-  firstName     String?
-  lastName      String?
-  email         String?
+  firstName     String?   @db.VarChar(100)
+  lastName      String?   @db.VarChar(100)
+  email         String?   @db.VarChar(255)
   accountOwner  Boolean   @default(false)
-  locale        String?
+  locale        String?   @db.VarChar(10)
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
-  refreshToken        String?
+  refreshToken        String?  @db.VarChar(255)
   refreshTokenExpires DateTime?
 }
 
 model GatewayCredentials {
   id                  Int       @id @default(autoincrement())
-  shop                String    @unique
-  username            String
-  password            String
-  senderId            String    @default("")
+  shop                String    @unique @db.VarChar(100)
+  username            String    @db.VarChar(100)
+  password            String    @db.VarChar(500)
+  senderId            String    @default("") @db.VarChar(50)
   testMode            Boolean   @default(true)
   senderIds           String    @db.Text
   coverage            String    @db.Text
@@ -46,8 +46,8 @@ model GatewayCredentials {
 
 model Settings {
   id        Int      @id @default(autoincrement())
-  shop      String
-  key       String
+  shop      String   @db.VarChar(100)
+  key       String   @db.VarChar(100)
   value     String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -58,12 +58,12 @@ model Settings {
 
 model SmsTemplate {
   id            Int      @id @default(autoincrement())
-  shop          String
-  eventType     String
+  shop          String   @db.VarChar(100)
+  eventType     String   @db.VarChar(50)
   enabled       Boolean  @default(true)
   templateEn    String   @db.Text
   templateAr    String   @db.Text
-  recipientType String   @default("customer")
+  recipientType String   @default("customer") @db.VarChar(20)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -73,18 +73,18 @@ model SmsTemplate {
 
 model SmsLog {
   id               Int      @id @default(autoincrement())
-  shop             String
-  eventType        String
-  phone            String
-  recipientType    String   @default("customer")
+  shop             String   @db.VarChar(100)
+  eventType        String   @db.VarChar(50)
+  phone            String   @db.VarChar(50)
+  recipientType    String   @default("customer") @db.VarChar(20)
   message          String   @db.Text
-  senderId         String
-  status           String
-  msgId            String?
+  senderId         String   @db.VarChar(50)
+  status           String   @db.VarChar(20)
+  msgId            String?  @db.VarChar(100)
   pointsCharged    Int      @default(0)
   balanceAfter     Float?
-  errorCode        String?
-  errorDescription String?
+  errorCode        String?  @db.VarChar(20)
+  errorDescription String?  @db.VarChar(255)
   apiResponse      String?  @db.Text
   testMode         Boolean  @default(false)
   createdAt        DateTime @default(now())
