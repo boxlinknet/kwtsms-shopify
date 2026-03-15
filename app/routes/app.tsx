@@ -52,7 +52,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   };
 
   // eslint-disable-next-line no-undef
-  return { apiKey: process.env.SHOPIFY_API_KEY || "", status };
+  return Response.json(
+    { apiKey: process.env.SHOPIFY_API_KEY || "", status },
+    { headers: { "Cache-Control": "no-store, no-cache, must-revalidate" } },
+  );
 };
 
 function StatusBar({ status }: { status: AppStatus }) {
