@@ -28,6 +28,8 @@ export interface AppStatus {
   todaySent: number;
 }
 
+export const shouldRevalidate = () => true;
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const shop = session.shop;
