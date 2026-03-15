@@ -128,19 +128,38 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (!rawPhone || !message) {
       return { intent, ok: false, error: "Phone number and message are required." } satisfies ActionData;
     }
-    const result = await sendSms({
-      shop,
-      phone: rawPhone,
-      message,
-      eventType: "test",
-      testMode: true,
-    });
-    if (!result.success) {
-      return { intent, ok: false, error: `Test SMS failed: ${result.error}` } satisfies ActionData;
+    const phones = rawPhone.split(",").map((p) => p.trim()).filter(Boolean);
+    if (phones.length === 0) {
+      return { intent, ok: false, error: "At least one phone number is required." } satisfies ActionData;
     }
+    const errors: string[] = [];
+    let totalPoints = 0;
+    let lastMsgId = "";
+    for (const phone of phones) {
+      const result = await sendSms({
+        shop,
+        phone,
+        message,
+        eventType: "test",
+        testMode: true,
+      });
+      if (!result.success) {
+        errors.push(`${phone}: ${result.error}`);
+      } else {
+        totalPoints += result.pointsCharged ?? 0;
+        lastMsgId = result.msgId ?? lastMsgId;
+      }
+    }
+    if (errors.length === phones.length) {
+      return { intent, ok: false, error: `Test SMS failed: ${errors.join("; ")}` } satisfies ActionData;
+    }
+    const successCount = phones.length - errors.length;
+    const msg = errors.length > 0
+      ? `Sent to ${successCount}/${phones.length} numbers. Errors: ${errors.join("; ")}`
+      : `Test SMS sent to ${successCount} number${successCount > 1 ? "s" : ""}.`;
     return {
-      intent, ok: true, message: "Test SMS sent successfully.",
-      testResult: { msgId: result.msgId ?? "", numbers: 1, pointsCharged: result.pointsCharged ?? 0 },
+      intent, ok: true, message: msg,
+      testResult: { msgId: lastMsgId, numbers: successCount, pointsCharged: totalPoints },
     } satisfies ActionData;
   }
 
@@ -314,7 +333,7 @@ export default function GatewaySettings() {
                 autocomplete="off"
               />
               <div style={{ textAlign: "right" }}>
-                <s-text>Enter local or international format, e.g. 98765432 or 96598765432</s-text>
+                <s-text>Enter one or multiple numbers separated by commas, e.g. 98765432, 96598765432</s-text>
               </div>
               <s-text-field
                 label="Message"
@@ -327,7 +346,7 @@ export default function GatewaySettings() {
                 <s-text>Test mode is always enabled for test SMS. No actual message will be delivered.</s-text>
               </div>
               <br />
-              <s-button type="submit">Send Test SMS</s-button>
+              <s-button type="submit" variant="primary">Send Test SMS</s-button>
             </Form>
 
             {actionData?.intent === "send_test" && actionData.ok && actionData.testResult && (

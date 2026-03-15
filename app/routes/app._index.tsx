@@ -76,7 +76,7 @@ export default function SettingsPage() {
   const [customerCreated, setCustomerCreated] = useState(settings.notify_customer_created === "true");
   const [adminPhone, setAdminPhone] = useState(settings.admin_phone ?? "");
   const [countryCode, setCountryCode] = useState(settings.default_country_code ?? "965");
-  const [language, setLanguage] = useState(settings.default_language ?? "en");
+  const [language, setLanguage] = useState(settings.default_language || "en");
   const [debugLogging, setDebugLogging] = useState(settings.debug_logging === "true");
 
   return (
