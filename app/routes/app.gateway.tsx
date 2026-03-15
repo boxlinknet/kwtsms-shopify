@@ -159,7 +159,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       senderId: creds.senderId,
       testMode: true,
     });
-    const result = await client.sendBatch(phones, message, { test: true });
+    const result = await client.send(phones, message, { test: true });
     if (!result.ok) {
       return { intent, ok: false, error: `Test SMS failed: ${result.error.description}` } satisfies ActionData;
     }

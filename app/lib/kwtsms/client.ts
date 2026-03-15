@@ -13,6 +13,12 @@ import { cleanMessage } from "./message";
 
 const API_BASE = "https://www.kwtsms.com/API";
 const TIMEOUT_MS = 10_000;
+const BATCH_SIZE = 200;
+const BATCH_DELAY_MS = 500;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 export class KwtSmsClient {
   private username: string;
@@ -27,19 +33,36 @@ export class KwtSmsClient {
     this.testMode = config.testMode ?? true;
   }
 
+  /**
+   * Send SMS to one or more numbers.
+   * Accepts a single number string or an array of numbers.
+   * If more than 200 numbers, automatically chunks into batches of 200
+   * with 500ms delay between requests.
+   */
   async send(
-    mobile: string,
+    mobile: string | string[],
     message: string,
     options?: { senderId?: string; test?: boolean },
   ): Promise<Result<SendResponse>> {
-    // Normalize phone number
-    const phoneResult = normalize(mobile);
-    if (!phoneResult.valid) {
+    const mobiles = Array.isArray(mobile) ? mobile : [mobile];
+
+    // Normalize all phone numbers
+    const normalized: string[] = [];
+    for (const m of mobiles) {
+      const result = normalize(m);
+      if (result.valid) {
+        normalized.push(result.normalized);
+      }
+    }
+
+    if (normalized.length === 0) {
       return {
         ok: false,
         error: {
           code: "PHONE_INVALID",
-          description: phoneResult.error ?? "Invalid phone number",
+          description: mobiles.length === 1
+            ? (normalize(mobiles[0]).error ?? "Invalid phone number")
+            : "No valid phone numbers provided",
           action: "Check phone number format",
         },
       };
@@ -59,71 +82,72 @@ export class KwtSmsClient {
     }
 
     const testFlag = options?.test ?? this.testMode;
+    const sender = options?.senderId ?? this.senderId;
 
+    // Single batch (200 or fewer): one API call
+    if (normalized.length <= BATCH_SIZE) {
+      return this._sendBatch(normalized, cleanedMessage, sender, testFlag);
+    }
+
+    // Multiple batches: chunk and delay
+    return this._sendBulk(normalized, cleanedMessage, sender, testFlag);
+  }
+
+  private async _sendBatch(
+    phones: string[],
+    message: string,
+    sender: string,
+    test: boolean,
+  ): Promise<Result<SendResponse>> {
     return this._post<SendResponse>("/send/", {
-      sender: options?.senderId ?? this.senderId,
-      mobile: phoneResult.normalized,
-      message: cleanedMessage,
-      test: testFlag ? "1" : "0",
+      sender,
+      mobile: phones.join(","),
+      message,
+      test: test ? "1" : "0",
     });
   }
 
-  async sendBatch(
-    mobiles: string[],
+  private async _sendBulk(
+    phones: string[],
     message: string,
-    options?: { senderId?: string; test?: boolean },
+    sender: string,
+    test: boolean,
   ): Promise<Result<SendResponse>> {
-    // Normalize all phone numbers
-    const normalized: string[] = [];
-    for (const mobile of mobiles) {
-      const result = normalize(mobile);
-      if (result.valid) {
-        normalized.push(result.normalized);
+    const chunks: string[][] = [];
+    for (let i = 0; i < phones.length; i += BATCH_SIZE) {
+      chunks.push(phones.slice(i, i + BATCH_SIZE));
+    }
+
+    let totalNumbers = 0;
+    let totalPoints = 0;
+    let lastMsgId = "";
+    let lastBalance = 0;
+
+    for (let i = 0; i < chunks.length; i++) {
+      const result = await this._sendBatch(chunks[i], message, sender, test);
+      if (!result.ok) {
+        return result;
+      }
+      totalNumbers += result.data.numbers;
+      totalPoints += result.data["points-charged"];
+      lastMsgId = result.data["msg-id"];
+      lastBalance = result.data["balance-after"];
+
+      if (i < chunks.length - 1) {
+        await sleep(BATCH_DELAY_MS);
       }
     }
 
-    if (normalized.length === 0) {
-      return {
-        ok: false,
-        error: {
-          code: "PHONE_INVALID",
-          description: "No valid phone numbers provided",
-          action: "Check phone number formats",
-        },
-      };
-    }
-
-    if (normalized.length > 200) {
-      return {
-        ok: false,
-        error: {
-          code: "ERR007",
-          description: "More than 200 numbers",
-          action: "Split into batches of 200 or fewer",
-        },
-      };
-    }
-
-    const cleanedMessage = cleanMessage(message);
-    if (cleanedMessage.length === 0) {
-      return {
-        ok: false,
-        error: {
-          code: "MSG_EMPTY",
-          description: "Message is empty after cleaning",
-          action: "Provide message content",
-        },
-      };
-    }
-
-    const testFlag = options?.test ?? this.testMode;
-
-    return this._post<SendResponse>("/send/", {
-      sender: options?.senderId ?? this.senderId,
-      mobile: normalized.join(","),
-      message: cleanedMessage,
-      test: testFlag ? "1" : "0",
-    });
+    return {
+      ok: true,
+      data: {
+        "msg-id": lastMsgId,
+        numbers: totalNumbers,
+        "points-charged": totalPoints,
+        "balance-after": lastBalance,
+        "unix-timestamp": Math.floor(Date.now() / 1000),
+      },
+    };
   }
 
   async balance(): Promise<Result<BalanceResponse>> {
