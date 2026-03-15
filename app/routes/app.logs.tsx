@@ -174,7 +174,7 @@ export default function LogsPage() {
               <s-option value="fulfillment_created">Fulfillment Created</s-option>
               <s-option value="fulfillment_updated">Fulfillment Updated</s-option>
               <s-option value="customer_created">New Customer</s-option>
-              <s-option value="test">Test</s-option>
+              <s-option value="test">Gateway Test</s-option>
             </s-select>
           </s-grid-item>
           <s-grid-item>
