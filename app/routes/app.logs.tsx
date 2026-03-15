@@ -240,7 +240,7 @@ export default function LogsPage() {
                   <s-table-cell>{log.recipientType ?? "customer"}</s-table-cell>
                   <s-table-cell>{log.eventType}</s-table-cell>
                   <s-table-cell>
-                    <span title={log.status === "failed" || log.status === "skipped" ? `${log.errorCode ?? ""}: ${log.errorDescription ?? "Unknown error"}` : ""}>
+                    <span title={log.status === "failed" || log.status === "skipped" ? (log.errorDescription ?? "Unknown error") : ""}>
                       <s-badge tone={statusBadgeTone(log.status)}>
                         {log.status}
                       </s-badge>
