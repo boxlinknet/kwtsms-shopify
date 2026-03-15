@@ -132,34 +132,45 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     if (phones.length === 0) {
       return { intent, ok: false, error: "At least one phone number is required." } satisfies ActionData;
     }
-    const errors: string[] = [];
-    let totalPoints = 0;
-    let lastMsgId = "";
-    for (const phone of phones) {
+    if (phones.length === 1) {
       const result = await sendSms({
         shop,
-        phone,
+        phone: phones[0],
         message,
         eventType: "test",
         testMode: true,
       });
       if (!result.success) {
-        errors.push(`${phone}: ${result.error}`);
-      } else {
-        totalPoints += result.pointsCharged ?? 0;
-        lastMsgId = result.msgId ?? lastMsgId;
+        return { intent, ok: false, error: `Test SMS failed: ${result.error}` } satisfies ActionData;
       }
+      return {
+        intent, ok: true, message: "Test SMS sent successfully.",
+        testResult: { msgId: result.msgId ?? "", numbers: 1, pointsCharged: result.pointsCharged ?? 0 },
+      } satisfies ActionData;
     }
-    if (errors.length === phones.length) {
-      return { intent, ok: false, error: `Test SMS failed: ${errors.join("; ")}` } satisfies ActionData;
+    // Multiple numbers: send in one API call via batch
+    const creds = await getCredentials(shop);
+    if (!creds || !creds.credentialsVerified) {
+      return { intent, ok: false, error: "Gateway not connected." } satisfies ActionData;
     }
-    const successCount = phones.length - errors.length;
-    const msg = errors.length > 0
-      ? `Sent to ${successCount}/${phones.length} numbers. Errors: ${errors.join("; ")}`
-      : `Test SMS sent to ${successCount} number${successCount > 1 ? "s" : ""}.`;
+    const client = new KwtSmsClient({
+      username: creds.username,
+      password: creds.password,
+      senderId: creds.senderId,
+      testMode: true,
+    });
+    const result = await client.sendBatch(phones, message, { test: true });
+    if (!result.ok) {
+      return { intent, ok: false, error: `Test SMS failed: ${result.error.description}` } satisfies ActionData;
+    }
     return {
-      intent, ok: true, message: msg,
-      testResult: { msgId: lastMsgId, numbers: successCount, pointsCharged: totalPoints },
+      intent, ok: true,
+      message: `Test SMS sent to ${phones.length} numbers in one batch.`,
+      testResult: {
+        msgId: String(result.data["msg-id"] ?? ""),
+        numbers: result.data.numbers ?? phones.length,
+        pointsCharged: result.data["points-charged"] ?? 0,
+      },
     } satisfies ActionData;
   }
 
