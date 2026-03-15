@@ -11,6 +11,16 @@
 
 Automated SMS notifications for Shopify stores via the [kwtSMS](https://www.kwtsms.com) gateway. Send order confirmations, shipping updates, and more directly to your customers' phones. Full Arabic and English support.
 
+> Don't have a kwtSMS account? [Sign up free at kwtsms.com](https://www.kwtsms.com/signup) - no credit card, no contracts, setup in under 1 minute.
+
+---
+
+## About kwtSMS
+
+kwtSMS is a Kuwaiti SMS gateway trusted by 2,700+ businesses to deliver messages to 220+ countries, with private Sender ID, free API testing, non-expiring credits, and competitive flat-rate pricing. Secure, simple to integrate, built to last. 99.8% delivery rate, 18 years in operation since 2007. [Get started](https://www.kwtsms.com/signup/)
+
+---
+
 ## Features
 
 - **Order Notifications**: SMS on order created, paid, shipped, partially fulfilled, cancelled
@@ -19,6 +29,7 @@ Automated SMS notifications for Shopify stores via the [kwtSMS](https://www.kwts
 - **Bilingual Templates**: Customizable EN/AR templates per event type
 - **Auto Language Detection**: Uses customer locale, falls back to store default
 - **Recipient Control**: Send to customer, admin, or both per event type
+- **Private Sender ID**: Customers see your brand name, not a random number
 - **Global Status Bar**: Live SMS status, balance, mode, and sender ID on every page
 - **Gateway Login/Logout**: Connect and disconnect kwtSMS credentials
 - **Test Mode**: Send test SMS without consuming credits
@@ -29,7 +40,7 @@ Automated SMS notifications for Shopify stores via the [kwtSMS](https://www.kwts
 ## Requirements
 
 - Shopify store (any plan)
-- kwtSMS account with API access ([register here](https://www.kwtsms.com))
+- kwtSMS account with API access ([register here](https://www.kwtsms.com/signup))
 - Approved Sender ID (for production use)
 
 ## Installation
@@ -56,7 +67,7 @@ Your kwtSMS API credentials are separate from your account login:
 
 ## Coverage
 
-Currently supports: Kuwait (+965), Saudi Arabia (+966), UAE (+971), Bahrain (+973), Qatar (+974). Contact kwtSMS to activate additional countries.
+Currently supports: Kuwait (+965), Saudi Arabia (+966), UAE (+971), Bahrain (+973), Qatar (+974), and 220+ countries worldwide. Contact kwtSMS to activate additional countries.
 
 ## Development
 
@@ -84,7 +95,7 @@ See [docs/PLAN.md](docs/PLAN.md) for the implementation plan and [docs/manual-te
 - React Router v7 (Remix) with Vite
 - Shopify Polaris web components + App Bridge
 - TypeScript
-- Prisma ORM (SQLite dev, PostgreSQL prod)
+- Prisma ORM (SQLite dev, MySQL/PostgreSQL prod)
 - kwtSMS REST/JSON API
 
 ## License
@@ -93,5 +104,5 @@ Proprietary. All rights reserved.
 
 ## Support
 
-- kwtSMS Support: [kwtsms.com/support](https://www.kwtsms.com/support.html)
+- kwtSMS Support: [kwtsms.com](https://www.kwtsms.com/#contact)
 - Issues: [GitHub Issues](https://github.com/boxlinknet/kwtsms-shopify/issues)
