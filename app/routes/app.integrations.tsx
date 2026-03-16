@@ -66,7 +66,7 @@ export default function IntegrationsPage() {
       </s-section>
 
       {/* Coming Soon integrations */}
-      <s-section>
+      <div style={{ padding: "16px 20px" }}>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coming Soon</h2>
         <div style={gridStyle}>
           <div style={cardStyle}>
@@ -117,7 +117,7 @@ export default function IntegrationsPage() {
             </p>
           </div>
         </div>
-      </s-section>
+      </div>
     </s-page>
   );
 }
