@@ -1,4 +1,4 @@
-import { KwtSmsClient, normalize, cleanMessage } from "../kwtsms";
+import { KwtSmsClient, normalize, cleanMessage, countPages } from "../kwtsms";
 import { getCredentials } from "../db/credentials";
 import { getSetting } from "../db/settings";
 import { getTemplate } from "../db/templates";
@@ -134,8 +134,22 @@ export async function send(params: {
     testMode,
   });
 
-  // ── Send ──
+  // ── Clean and validate message length ──
   const cleanedMessage = cleanMessage(message);
+  const MAX_PAGES = 7;
+  const pageInfo = countPages(cleanedMessage);
+  if (pageInfo.pages > MAX_PAGES) {
+    const maxChars = pageInfo.isUnicode ? 67 * MAX_PAGES : 153 * MAX_PAGES;
+    await createLog({
+      shop, eventType, phone: normalized.join(","),
+      recipientType, message: cleanedMessage, senderId,
+      status: "failed", errorCode: "MSG_TOO_LONG",
+      errorDescription: `Message is ${pageInfo.pages} pages (max ${MAX_PAGES}). ${pageInfo.chars} chars, limit ~${maxChars}`,
+    });
+    return { success: false, error: `Message too long: ${pageInfo.pages} pages (max ${MAX_PAGES})` };
+  }
+
+  // ── Send ──
   const result = await client.send(normalized, cleanedMessage, {
     senderId,
     test: testMode,
