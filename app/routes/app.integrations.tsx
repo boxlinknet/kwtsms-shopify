@@ -48,10 +48,9 @@ const gridStyle: React.CSSProperties = {
 export default function IntegrationsPage() {
   return (
     <s-page heading="Integrations">
-      <div style={{ marginTop: "16px" }} />
-      {/* Active integrations */}
-      <s-section>
-        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Active</h2>
+      <div style={{ padding: "16px 20px" }}>
+        {/* Active integrations */}
+        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "16px 0 12px 0" }}>Active</h2>
         <div style={cardStyle}>
           <div style={headerStyle}>
             <p style={titleStyle}>Order Notifications</p>
@@ -63,10 +62,10 @@ export default function IntegrationsPage() {
             events trigger notifications in the Settings page.
           </p>
         </div>
-      </s-section>
 
-      {/* Coming Soon integrations */}
-      <div style={{ padding: "16px 20px" }}>
+        <hr style={{ border: "none", borderTop: "1px solid #e1e3e5", margin: "24px 0" }} />
+
+        {/* Coming Soon integrations */}
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coming Soon</h2>
         <div style={gridStyle}>
           <div style={cardStyle}>
