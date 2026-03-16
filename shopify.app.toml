@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "aa2047f12d6680b16906e1a163416dc9"
-name = "kwtsms"
+name = "kwtSMS"
 application_url = "https://notify.kwtsms.com"
 embedded = true
 
