@@ -18,8 +18,9 @@ const cardStyle: React.CSSProperties = {
 const headerStyle: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
-  alignItems: "flex-start",
+  alignItems: "center",
   marginBottom: "8px",
+  gap: "8px",
 };
 
 const titleStyle: React.CSSProperties = {
@@ -27,6 +28,8 @@ const titleStyle: React.CSSProperties = {
   fontWeight: 700,
   color: "#202223",
   margin: 0,
+  flex: 1,
+  minWidth: 0,
 };
 
 const descStyle: React.CSSProperties = {
