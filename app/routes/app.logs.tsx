@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useLoaderData, useSearchParams, useSubmit } from "react-router";
 import { authenticate } from "../shopify.server";
-import { getLogs, getLogStats, clearLogs } from "../lib/db/logs";
+import { getLogs, getLogStats, clearLogs, getTotalLogCount } from "../lib/db/logs";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
@@ -16,14 +16,16 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const recipientType = rawRecipientType && rawRecipientType !== "all" ? rawRecipientType : undefined;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
 
-  const [logsResult, stats] = await Promise.all([
+  const [logsResult, stats, totalAll] = await Promise.all([
     getLogs(session.shop, { status, eventType, recipientType, page, pageSize: 20 }),
     getLogStats(session.shop),
+    getTotalLogCount(session.shop),
   ]);
 
   return {
     logs: logsResult.logs,
     total: logsResult.total,
+    totalAll,
     stats,
     currentPage: page,
     totalPages: Math.ceil(logsResult.total / 20),
@@ -44,7 +46,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function LogsPage() {
-  const { logs, total, stats, currentPage, totalPages } =
+  const { logs, total, totalAll, stats, currentPage, totalPages } =
     useLoaderData<typeof loader>();
   const [searchParams, setSearchParams] = useSearchParams();
   const submit = useSubmit();
@@ -146,7 +148,7 @@ export default function LogsPage() {
       {/* Filters and actions */}
       <s-section>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Filters</h2>
-        <s-grid gridTemplateColumns="1fr 1fr 1fr 1fr" gap="base">
+        <s-grid gridTemplateColumns="1fr 1fr 1fr" gap="base">
           <s-grid-item>
             <s-select
               label="Status"
@@ -194,18 +196,6 @@ export default function LogsPage() {
               <s-option value="customer">Customer</s-option>
               <s-option value="admin">Admin</s-option>
             </s-select>
-          </s-grid-item>
-          <s-grid-item>
-            <s-box padding="base">
-              <s-button
-                variant="primary"
-                tone="critical"
-                onClick={() => setClearModalOpen(true)}
-                disabled={logs.length === 0}
-              >
-                Clear All Logs
-              </s-button>
-            </s-box>
           </s-grid-item>
         </s-grid>
       </s-section>
@@ -260,21 +250,38 @@ export default function LogsPage() {
         )}
       </s-section>
 
-      {/* Clear confirmation */}
-      {clearModalOpen && (
-        <s-section>
-          <s-banner tone="critical">
-            Are you sure you want to delete all SMS logs? This cannot be undone.
-          </s-banner>
-          <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
-            <s-button variant="primary" tone="critical" onClick={handleClearLogs}>
-              Yes, Delete All Logs
-            </s-button>
-            <s-button onClick={() => setClearModalOpen(false)}>
-              Cancel
-            </s-button>
-          </div>
-        </s-section>
+      {/* Danger zone */}
+      {totalAll > 0 && (
+        <>
+          <div style={{ marginTop: "16px" }} />
+          <s-section>
+            <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0", color: "#d72c0d" }}>Danger Zone</h2>
+            <s-paragraph>
+              Permanently delete all {totalAll} SMS logs from the database. This action is irreversible and cannot be undone. All log entries, regardless of any active filters, will be removed.
+            </s-paragraph>
+            {!clearModalOpen ? (
+              <div style={{ marginTop: "12px" }}>
+                <s-button variant="primary" tone="critical" onClick={() => setClearModalOpen(true)}>
+                  Delete All Logs
+                </s-button>
+              </div>
+            ) : (
+              <div style={{ marginTop: "12px" }}>
+                <s-banner tone="critical">
+                  This will permanently delete all {totalAll} log entries. Are you sure?
+                </s-banner>
+                <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+                  <s-button variant="primary" tone="critical" onClick={handleClearLogs}>
+                    Yes, Delete Everything
+                  </s-button>
+                  <s-button onClick={() => setClearModalOpen(false)}>
+                    Cancel
+                  </s-button>
+                </div>
+              </div>
+            )}
+          </s-section>
+        </>
       )}
     </s-page>
   );

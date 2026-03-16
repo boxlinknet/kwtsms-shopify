@@ -105,6 +105,10 @@ export async function clearLogs(shop: string): Promise<number> {
   return result.count;
 }
 
+export async function getTotalLogCount(shop: string): Promise<number> {
+  return db.smsLog.count({ where: { shop } });
+}
+
 export async function getTodaySentCount(shop: string): Promise<number> {
   const now = new Date();
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
