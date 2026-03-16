@@ -53,25 +53,29 @@ export default function LogsPage() {
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams);
-      if (value) {
-        params.set(key, value);
-      } else {
-        params.delete(key);
-      }
-      params.delete("page");
-      setSearchParams(params);
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        if (value) {
+          params.set(key, value);
+        } else {
+          params.delete(key);
+        }
+        params.delete("page");
+        return params;
+      });
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   );
 
   const goToPage = useCallback(
     (page: number) => {
-      const params = new URLSearchParams(searchParams);
-      params.set("page", String(page));
-      setSearchParams(params);
+      setSearchParams((prev) => {
+        const params = new URLSearchParams(prev);
+        params.set("page", String(page));
+        return params;
+      });
     },
-    [searchParams, setSearchParams],
+    [setSearchParams],
   );
 
   const handleClearLogs = useCallback(() => {
