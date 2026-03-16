@@ -313,17 +313,17 @@ export default function GatewaySettings() {
               ) : (
                 <s-text>No sender IDs available. Contact kwtSMS to register a sender ID.</s-text>
               )}
+              <div style={{ textAlign: "right" }}>
+                <s-text>
+                  * To buy a private Sender ID, visit your{" "}
+                  <s-link href="https://www.kwtsms.com/login" target="_blank">
+                    kwtSMS dashboard
+                  </s-link>.
+                </s-text>
+              </div>
               <br />
               <s-button variant="primary" type="submit">Save Settings</s-button>
             </Form>
-            <div style={{ textAlign: "right" }}>
-              <s-text>
-                * To buy a private Sender ID, visit your{" "}
-                <s-link href="https://www.kwtsms.com/login" target="_blank">
-                  kwtSMS dashboard
-                </s-link>.
-              </s-text>
-            </div>
           </s-section>
 
           <s-section>
