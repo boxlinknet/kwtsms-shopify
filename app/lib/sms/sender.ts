@@ -1,10 +1,10 @@
-import { KwtSmsClient, normalize, cleanMessage, maskPhone } from "../kwtsms";
+import { KwtSmsClient, normalize, cleanMessage } from "../kwtsms";
 import { getCredentials } from "../db/credentials";
 import { getSetting } from "../db/settings";
 import { getTemplate } from "../db/templates";
 import { createLog } from "../db/logs";
 import { renderTemplate, type TemplateData } from "./templates";
-import { updateBalanceFromResponse } from "./balance";
+import { updateBalanceFromResponse, syncBalance } from "./balance";
 
 export interface SendResult {
   success: boolean;
@@ -104,8 +104,19 @@ export async function send(params: {
     }
   }
 
+  // ── Sync balance if stale (>24 hours) ──
+  let availableBalance = creds.balanceAvailable;
+  const STALE_MS = 24 * 60 * 60 * 1000;
+  const lastSync = creds.balanceUpdatedAt ? new Date(creds.balanceUpdatedAt).getTime() : 0;
+  if (Date.now() - lastSync > STALE_MS) {
+    const synced = await syncBalance(shop);
+    if (synced.ok) {
+      availableBalance = synced.data.available;
+    }
+  }
+
   // ── Balance check (once, before sending) ──
-  if (creds.balanceAvailable <= 0) {
+  if (availableBalance <= 0) {
     await createLog({
       shop, eventType, phone: normalized.join(","),
       recipientType, message, senderId,
