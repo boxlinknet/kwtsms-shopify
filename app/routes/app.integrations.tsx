@@ -7,12 +7,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const cardStyle: React.CSSProperties = {
+  border: "1px solid #e1e3e5",
   borderRadius: "12px",
   padding: "20px",
   display: "flex",
   flexDirection: "column",
   height: "100%",
-  background: "#f6f6f7",
+  background: "#fff",
+  position: "relative",
+  zIndex: 1,
 };
 
 const headerStyle: React.CSSProperties = {
@@ -43,6 +46,8 @@ const gridStyle: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "1fr 1fr",
   gap: "12px",
+  position: "relative",
+  zIndex: 1,
 };
 
 export default function IntegrationsPage() {
