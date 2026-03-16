@@ -438,6 +438,32 @@ export default function App() {
         </div>
       </section>
 
+      {/* ── Screenshots ── */}
+      <section className={`${styles.section} ${styles.sectionCompact} ${styles.sectionCenter}`}>
+        <div className={styles.sectionLabel}>App Preview</div>
+        <h2 className={styles.sectionTitle}>See it in action</h2>
+        <div style={{ marginBottom: "32px" }} />
+
+        <div className={styles.screenshots}>
+          <div className={styles.screenshotCard}>
+            <div className={styles.screenshotLabel}>Settings: notification events, admin phone, country code</div>
+            <img src="/screenshot-settings.png" alt="kwtSMS Settings page" />
+          </div>
+          <div className={styles.screenshotCard}>
+            <div className={styles.screenshotLabel}>Gateway: credentials, balance, sender ID, coverage, test SMS</div>
+            <img src="/screenshot-gateway.png" alt="kwtSMS Gateway page" />
+          </div>
+          <div className={styles.screenshotCard}>
+            <div className={styles.screenshotLabel}>Templates: bilingual Arabic and English with placeholders</div>
+            <img src="/screenshot-templates.png" alt="kwtSMS Templates page" />
+          </div>
+          <div className={styles.screenshotCard}>
+            <div className={styles.screenshotLabel}>Logs: delivery status, sender ID, recipient type, error details</div>
+            <img src="/screenshot-logs.png" alt="kwtSMS Logs page" />
+          </div>
+        </div>
+      </section>
+
       {/* ── Install CTA ── */}
       <section className={styles.install} id="install">
         <h2 className={styles.installTitle}>Ready to connect your store?</h2>

@@ -344,6 +344,37 @@
   line-height: 1.5;
 }
 
+/* ── Screenshots ── */
+.screenshots {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.screenshotCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.screenshotCard img {
+  width: 100%;
+  display: block;
+}
+
+.screenshotLabel {
+  padding: 14px 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--bg-alt);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
 /* ── Features grid ── */
 .features {
   display: grid;
