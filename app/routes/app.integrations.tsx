@@ -7,12 +7,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 const cardStyle: React.CSSProperties = {
-  border: "1px solid #e1e3e5",
   borderRadius: "12px",
   padding: "20px",
   display: "flex",
   flexDirection: "column",
   height: "100%",
+  background: "#f6f6f7",
 };
 
 const headerStyle: React.CSSProperties = {
