@@ -8,9 +8,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session } = await authenticate.admin(request);
   const url = new URL(request.url);
 
-  const status = url.searchParams.get("status") || undefined;
-  const eventType = url.searchParams.get("eventType") || undefined;
-  const recipientType = url.searchParams.get("recipientType") || undefined;
+  const rawStatus = url.searchParams.get("status");
+  const rawEventType = url.searchParams.get("eventType");
+  const rawRecipientType = url.searchParams.get("recipientType");
+  const status = rawStatus && rawStatus !== "all" ? rawStatus : undefined;
+  const eventType = rawEventType && rawEventType !== "all" ? rawEventType : undefined;
+  const recipientType = rawRecipientType && rawRecipientType !== "all" ? rawRecipientType : undefined;
   const page = parseInt(url.searchParams.get("page") || "1", 10);
 
   const [logsResult, stats] = await Promise.all([
@@ -47,15 +50,15 @@ export default function LogsPage() {
   const submit = useSubmit();
   const [clearModalOpen, setClearModalOpen] = useState(false);
 
-  const statusFilter = searchParams.get("status") || "";
-  const eventTypeFilter = searchParams.get("eventType") || "";
-  const recipientTypeFilter = searchParams.get("recipientType") || "";
+  const statusFilter = searchParams.get("status") || "all";
+  const eventTypeFilter = searchParams.get("eventType") || "all";
+  const recipientTypeFilter = searchParams.get("recipientType") || "all";
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
       setSearchParams((prev) => {
         const params = new URLSearchParams(prev);
-        if (value) {
+        if (value && value !== "all") {
           params.set(key, value);
         } else {
           params.delete(key);
@@ -153,7 +156,7 @@ export default function LogsPage() {
                 updateFilter("status", target.value);
               }}
             >
-              <s-option value="">All Statuses</s-option>
+              <s-option value="all">All Statuses</s-option>
               <s-option value="sent">Sent</s-option>
               <s-option value="failed">Failed</s-option>
               <s-option value="skipped">Skipped</s-option>
@@ -168,7 +171,7 @@ export default function LogsPage() {
                 updateFilter("eventType", target.value);
               }}
             >
-              <s-option value="">All Events</s-option>
+              <s-option value="all">All Events</s-option>
               <s-option value="order_created">Order Created</s-option>
               <s-option value="order_paid">Order Paid</s-option>
               <s-option value="order_shipped">Order Shipped</s-option>
@@ -187,7 +190,7 @@ export default function LogsPage() {
                 updateFilter("recipientType", target.value);
               }}
             >
-              <s-option value="">All Recipients</s-option>
+              <s-option value="all">All Recipients</s-option>
               <s-option value="customer">Customer</s-option>
               <s-option value="admin">Admin</s-option>
             </s-select>
