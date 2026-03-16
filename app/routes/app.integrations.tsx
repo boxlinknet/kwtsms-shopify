@@ -13,13 +13,14 @@ const cardStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   height: "100%",
+  gap: "8px",
 };
 
-const headerStyle: React.CSSProperties = {
+const titleRow: React.CSSProperties = {
   display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  marginBottom: "8px",
+  alignItems: "center",
+  gap: "10px",
+  flexWrap: "wrap",
 };
 
 const titleStyle: React.CSSProperties = {
@@ -42,77 +43,90 @@ const gridStyle: React.CSSProperties = {
   gap: "12px",
 };
 
+function IntegrationCard({
+  title,
+  description,
+  badge,
+  badgeTone,
+}: {
+  title: string;
+  description: string;
+  badge: string;
+  badgeTone: string;
+}) {
+  return (
+    <div style={cardStyle}>
+      <div style={titleRow}>
+        <p style={titleStyle}>{title}</p>
+        <s-badge
+          tone={badgeTone}
+          icon={badgeTone === "success" ? "check-circle" : "clock"}
+        >
+          {badge}
+        </s-badge>
+      </div>
+      <p style={descStyle}>{description}</p>
+    </div>
+  );
+}
+
 export default function IntegrationsPage() {
   return (
     <s-page heading="Integrations">
       <div style={{ marginTop: "16px" }} />
-      {/* Active integrations */}
       <s-section>
-        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Active</h2>
-        <div style={cardStyle}>
-          <div style={headerStyle}>
-            <p style={titleStyle}>Order Notifications</p>
-            <s-badge tone="success" icon="check-circle">Active</s-badge>
-          </div>
-          <p style={descStyle}>
-            Automatically send SMS notifications to customers when orders
-            are created, paid, fulfilled, or cancelled. Configure which
-            events trigger notifications in the Settings page.
-          </p>
-        </div>
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 600,
+            margin: "0 0 12px 0",
+          }}
+        >
+          Active
+        </h2>
+        <IntegrationCard
+          title="Order Notifications"
+          description="Automatically send SMS notifications to customers when orders are created, paid, fulfilled, or cancelled. Configure which events trigger notifications in the Settings page."
+          badge="Active"
+          badgeTone="success"
+        />
       </s-section>
 
-      {/* Coming Soon integrations */}
       <s-section>
-        <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coming Soon</h2>
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 600,
+            margin: "0 0 12px 0",
+          }}
+        >
+          Coming Soon
+        </h2>
         <div style={gridStyle}>
-          <div style={cardStyle}>
-            <div style={headerStyle}>
-              <p style={titleStyle}>Shopify Flow</p>
-              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-            </div>
-            <p style={descStyle}>
-              Create custom automation workflows with Shopify Flow
-              triggers and actions. Send SMS based on any Flow event or
-              condition.
-            </p>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={headerStyle}>
-              <p style={titleStyle}>Abandoned Cart Recovery</p>
-              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-            </div>
-            <p style={descStyle}>
-              Send automated SMS reminders to customers who leave items in
-              their cart without completing checkout. Recover lost sales
-              with timely nudges.
-            </p>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={headerStyle}>
-              <p style={titleStyle}>Marketing Campaigns</p>
-              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-            </div>
-            <p style={descStyle}>
-              Send bulk SMS marketing campaigns to your customer list.
-              Promote sales, new products, and special offers directly to
-              your audience.
-            </p>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={headerStyle}>
-              <p style={titleStyle}>OTP Phone Verification</p>
-              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-            </div>
-            <p style={descStyle}>
-              Verify customer phone numbers with one-time passwords during
-              checkout or account registration. Reduce fraud and ensure
-              accurate contact information.
-            </p>
-          </div>
+          <IntegrationCard
+            title="Shopify Flow"
+            description="Create custom automation workflows with Shopify Flow triggers and actions. Send SMS based on any Flow event or condition."
+            badge="Coming Soon"
+            badgeTone="info"
+          />
+          <IntegrationCard
+            title="Abandoned Cart"
+            description="Send automated SMS reminders to customers who leave items in their cart without completing checkout. Recover lost sales with timely nudges."
+            badge="Coming Soon"
+            badgeTone="info"
+          />
+          <IntegrationCard
+            title="SMS Campaigns"
+            description="Send bulk SMS marketing campaigns to your customer list. Promote sales, new products, and special offers directly to your audience."
+            badge="Coming Soon"
+            badgeTone="info"
+          />
+          <IntegrationCard
+            title="OTP Verification"
+            description="Verify customer phone numbers with one-time passwords during checkout or account registration. Reduce fraud and ensure accurate contact information."
+            badge="Coming Soon"
+            badgeTone="info"
+          />
         </div>
       </s-section>
     </s-page>
