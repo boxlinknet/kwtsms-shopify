@@ -6,6 +6,42 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return null;
 };
 
+const cardStyle: React.CSSProperties = {
+  border: "1px solid #e1e3e5",
+  borderRadius: "12px",
+  padding: "20px",
+  display: "flex",
+  flexDirection: "column",
+  height: "100%",
+};
+
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  marginBottom: "8px",
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: "15px",
+  fontWeight: 700,
+  color: "#202223",
+  margin: 0,
+};
+
+const descStyle: React.CSSProperties = {
+  fontSize: "13px",
+  color: "#6d7175",
+  lineHeight: 1.5,
+  margin: 0,
+};
+
+const gridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "12px",
+};
+
 export default function IntegrationsPage() {
   return (
     <s-page heading="Integrations">
@@ -13,99 +49,71 @@ export default function IntegrationsPage() {
       {/* Active integrations */}
       <s-section>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Active</h2>
-        <s-box padding="base" border="base" borderRadius="base">
-          <s-grid gridTemplateColumns="1fr auto" alignItems="center">
-            <s-grid-item>
-              <strong>Order Notifications</strong>
-              <s-paragraph>
-                Automatically send SMS notifications to customers when orders
-                are created, paid, fulfilled, or cancelled. Configure which
-                events trigger notifications in the Settings page.
-              </s-paragraph>
-            </s-grid-item>
-            <s-grid-item>
-              <s-badge tone="success" icon="check-circle">Active</s-badge>
-            </s-grid-item>
-          </s-grid>
-        </s-box>
+        <div style={cardStyle}>
+          <div style={headerStyle}>
+            <p style={titleStyle}>Order Notifications</p>
+            <s-badge tone="success" icon="check-circle">Active</s-badge>
+          </div>
+          <p style={descStyle}>
+            Automatically send SMS notifications to customers when orders
+            are created, paid, fulfilled, or cancelled. Configure which
+            events trigger notifications in the Settings page.
+          </p>
+        </div>
       </s-section>
 
       {/* Coming Soon integrations */}
       <s-section>
         <h2 style={{ fontSize: "18px", fontWeight: 600, margin: "0 0 12px 0" }}>Coming Soon</h2>
-        <s-grid gridTemplateColumns="1fr 1fr" gap="base">
-          <s-grid-item>
-            <s-box padding="base" border="base" borderRadius="base">
-              <s-grid gridTemplateColumns="1fr auto" alignItems="start">
-                <s-grid-item>
-                  <strong>Shopify Flow</strong>
-                  <s-paragraph>
-                    Create custom automation workflows with Shopify Flow
-                    triggers and actions. Send SMS based on any Flow event or
-                    condition.
-                  </s-paragraph>
-                </s-grid-item>
-                <s-grid-item>
-                  <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-                </s-grid-item>
-              </s-grid>
-            </s-box>
-          </s-grid-item>
+        <div style={gridStyle}>
+          <div style={cardStyle}>
+            <div style={headerStyle}>
+              <p style={titleStyle}>Shopify Flow</p>
+              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
+            </div>
+            <p style={descStyle}>
+              Create custom automation workflows with Shopify Flow
+              triggers and actions. Send SMS based on any Flow event or
+              condition.
+            </p>
+          </div>
 
-          <s-grid-item>
-            <s-box padding="base" border="base" borderRadius="base">
-              <s-grid gridTemplateColumns="1fr auto" alignItems="start">
-                <s-grid-item>
-                  <strong>Abandoned Cart Recovery</strong>
-                  <s-paragraph>
-                    Send automated SMS reminders to customers who leave items in
-                    their cart without completing checkout. Recover lost sales
-                    with timely nudges.
-                  </s-paragraph>
-                </s-grid-item>
-                <s-grid-item>
-                  <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-                </s-grid-item>
-              </s-grid>
-            </s-box>
-          </s-grid-item>
+          <div style={cardStyle}>
+            <div style={headerStyle}>
+              <p style={titleStyle}>Abandoned Cart Recovery</p>
+              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
+            </div>
+            <p style={descStyle}>
+              Send automated SMS reminders to customers who leave items in
+              their cart without completing checkout. Recover lost sales
+              with timely nudges.
+            </p>
+          </div>
 
-          <s-grid-item>
-            <s-box padding="base" border="base" borderRadius="base">
-              <s-grid gridTemplateColumns="1fr auto" alignItems="start">
-                <s-grid-item>
-                  <strong>Marketing Campaigns</strong>
-                  <s-paragraph>
-                    Send bulk SMS marketing campaigns to your customer list.
-                    Promote sales, new products, and special offers directly to
-                    your audience.
-                  </s-paragraph>
-                </s-grid-item>
-                <s-grid-item>
-                  <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-                </s-grid-item>
-              </s-grid>
-            </s-box>
-          </s-grid-item>
+          <div style={cardStyle}>
+            <div style={headerStyle}>
+              <p style={titleStyle}>Marketing Campaigns</p>
+              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
+            </div>
+            <p style={descStyle}>
+              Send bulk SMS marketing campaigns to your customer list.
+              Promote sales, new products, and special offers directly to
+              your audience.
+            </p>
+          </div>
 
-          <s-grid-item>
-            <s-box padding="base" border="base" borderRadius="base">
-              <s-grid gridTemplateColumns="1fr auto" alignItems="start">
-                <s-grid-item>
-                  <strong>OTP Phone Verification</strong>
-                  <s-paragraph>
-                    Verify customer phone numbers with one-time passwords during
-                    checkout or account registration. Reduce fraud and ensure
-                    accurate contact information.
-                  </s-paragraph>
-                </s-grid-item>
-                <s-grid-item>
-                  <s-badge tone="info" icon="clock">Coming Soon</s-badge>
-                </s-grid-item>
-              </s-grid>
-            </s-box>
-          </s-grid-item>
-        </s-grid>
+          <div style={cardStyle}>
+            <div style={headerStyle}>
+              <p style={titleStyle}>OTP Phone Verification</p>
+              <s-badge tone="info" icon="clock">Coming Soon</s-badge>
+            </div>
+            <p style={descStyle}>
+              Verify customer phone numbers with one-time passwords during
+              checkout or account registration. Reduce fraud and ensure
+              accurate contact information.
+            </p>
+          </div>
+        </div>
       </s-section>
     </s-page>
   );
