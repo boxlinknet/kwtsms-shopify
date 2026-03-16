@@ -241,8 +241,16 @@ export default function Privacy() {
               kwtsms.com
             </a>
           </li>
-          <li>Email: support@kwtsms.com</li>
-          <li>Phone: +965 9022 0322</li>
+          <li>
+            Contact us:{" "}
+            <a
+              href="https://www.kwtsms.com/#contact"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              www.kwtsms.com/#contact
+            </a>
+          </li>
         </ul>
       </article>
 
