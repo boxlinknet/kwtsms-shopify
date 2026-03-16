@@ -1,19 +1,6 @@
 import { KwtSmsClient, type Result, type BalanceResponse } from "../kwtsms";
 import { getCredentials, saveCredentials } from "../db/credentials";
 
-export async function checkBalance(
-  shop: string,
-): Promise<{ available: number; sufficient: boolean }> {
-  const creds = await getCredentials(shop);
-  if (!creds) {
-    return { available: 0, sufficient: false };
-  }
-  return {
-    available: creds.balanceAvailable,
-    sufficient: creds.balanceAvailable > 0,
-  };
-}
-
 export async function updateBalanceFromResponse(
   shop: string,
   balanceAfter: number,

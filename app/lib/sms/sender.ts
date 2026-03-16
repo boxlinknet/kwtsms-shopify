@@ -4,7 +4,7 @@ import { getSetting } from "../db/settings";
 import { getTemplate } from "../db/templates";
 import { createLog } from "../db/logs";
 import { renderTemplate, type TemplateData } from "./templates";
-import { checkBalance, updateBalanceFromResponse } from "./balance";
+import { updateBalanceFromResponse } from "./balance";
 
 export interface SendResult {
   success: boolean;
@@ -13,128 +13,137 @@ export interface SendResult {
   error?: string;
 }
 
-export async function sendSms(params: {
+/**
+ * Unified send function. Handles single and multiple numbers,
+ * deduplication, normalization, coverage check, balance check,
+ * global toggles (SMS on/off, test mode), and auto-chunking for 200+ numbers.
+ *
+ * Balance is checked once before sending. After any successful send,
+ * local balance is updated from the API response. No unnecessary API calls.
+ */
+export async function send(params: {
   shop: string;
-  phone: string;
+  phone: string | string[];
   message: string;
   eventType: string;
   senderId?: string;
   testMode?: boolean;
   recipientType?: string;
 }): Promise<SendResult> {
-  const { shop, phone, message, eventType } = params;
-  const debug = (await getSetting(shop, "debug_logging")) === "true";
+  const { shop, message, eventType } = params;
 
-  // Get default country code for normalization
-  const defaultCountryCode = (await getSetting(shop, "default_country_code")) ?? "965";
-
-  if (debug) console.log(`[SMS:debug] sendSms called`, { shop, eventType, phone: maskPhone(phone), testMode: params.testMode });
-
-  // Normalize phone
-  const phoneResult = normalize(phone, defaultCountryCode);
-  if (debug) console.log(`[SMS:debug] phone normalized`, { input: maskPhone(phone), output: phoneResult.valid ? maskPhone(phoneResult.normalized) : phoneResult.error });
-  if (!phoneResult.valid) {
-    await createLog({
-      shop,
-      eventType,
-      phone: phone,
-      recipientType: params.recipientType ?? "customer",
-      message,
-      senderId: params.senderId ?? "",
-      status: "failed",
-      errorCode: "PHONE_INVALID",
-      errorDescription: phoneResult.error,
-    });
-    return { success: false, error: phoneResult.error };
+  // ── Global toggles ──
+  const smsEnabled = await getSetting(shop, "sms_enabled");
+  if (smsEnabled === "false") {
+    return { success: false, error: "SMS notifications are disabled" };
   }
 
-  // Check balance
-  const balance = await checkBalance(shop);
-  if (debug) console.log(`[SMS:debug] balance check`, balance);
-  if (!balance.sufficient) {
-    await createLog({
-      shop,
-      eventType,
-      phone: phoneResult.normalized,
-      recipientType: params.recipientType ?? "customer",
-      message,
-      senderId: params.senderId ?? "",
-      status: "failed",
-      errorCode: "ZERO_BALANCE",
-      errorDescription: "Insufficient balance",
-    });
-    return { success: false, error: "Insufficient balance" };
-  }
-
-  // Get credentials
+  // ── Get credentials ──
   const creds = await getCredentials(shop);
   if (!creds || !creds.credentialsVerified) {
-    return { success: false, error: "Gateway credentials not configured" };
+    return { success: false, error: "Gateway not connected. Go to Gateway page to log in." };
   }
 
-  // Check coverage
-  const coverage = JSON.parse(creds.coverage) as string[];
-  if (coverage.length > 0) {
-    const hasRoute = coverage.some((prefix) =>
-      phoneResult.normalized.startsWith(prefix),
-    );
-    if (!hasRoute) {
-      await createLog({
-        shop,
-        eventType,
-        phone: phoneResult.normalized,
-        message,
-        senderId: params.senderId ?? creds.senderId,
-        recipientType: params.recipientType ?? "customer",
-        status: "skipped",
-        errorCode: "NO_COVERAGE",
-        errorDescription: "Country not in coverage list",
-      });
-      return { success: false, error: "Country not in coverage list" };
+  const testMode = params.testMode ?? creds.testMode;
+  const senderId = params.senderId ?? creds.senderId;
+  const recipientType = params.recipientType ?? "customer";
+  const defaultCountryCode = (await getSetting(shop, "default_country_code")) ?? "965";
+
+  // ── Normalize, deduplicate, and validate phones ──
+  const rawPhones = Array.isArray(params.phone) ? params.phone : [params.phone];
+  const seen = new Set<string>();
+  const normalized: string[] = [];
+  const invalid: string[] = [];
+
+  for (const raw of rawPhones) {
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const result = normalize(trimmed, defaultCountryCode);
+    if (!result.valid) {
+      invalid.push(trimmed);
+      continue;
+    }
+    if (!seen.has(result.normalized)) {
+      seen.add(result.normalized);
+      normalized.push(result.normalized);
     }
   }
 
+  if (normalized.length === 0) {
+    const errorMsg = invalid.length > 0
+      ? `Invalid phone number: ${invalid[0]}`
+      : "No phone number provided";
+    await createLog({
+      shop, eventType, phone: rawPhones[0] ?? "",
+      recipientType, message, senderId,
+      status: "failed", errorCode: "PHONE_INVALID", errorDescription: errorMsg,
+    });
+    return { success: false, error: errorMsg };
+  }
+
+  // ── Coverage check (only if coverage list exists) ──
+  const coverage = JSON.parse(creds.coverage || "[]") as string[];
+  if (coverage.length > 0) {
+    const uncovered = normalized.filter(
+      (phone) => !coverage.some((prefix) => phone.startsWith(prefix)),
+    );
+    if (uncovered.length === normalized.length) {
+      await createLog({
+        shop, eventType, phone: normalized[0],
+        recipientType, message, senderId,
+        status: "skipped", errorCode: "NO_COVERAGE",
+        errorDescription: "No numbers in coverage area",
+      });
+      return { success: false, error: "No numbers in coverage area" };
+    }
+    // Remove uncovered numbers silently, send to covered ones only
+    if (uncovered.length > 0) {
+      for (const phone of uncovered) {
+        normalized.splice(normalized.indexOf(phone), 1);
+      }
+    }
+  }
+
+  // ── Balance check (once, before sending) ──
+  if (creds.balanceAvailable <= 0) {
+    await createLog({
+      shop, eventType, phone: normalized.join(","),
+      recipientType, message, senderId,
+      status: "failed", errorCode: "ZERO_BALANCE",
+      errorDescription: "Insufficient SMS credits. Recharge at kwtsms.com",
+    });
+    return { success: false, error: "Insufficient SMS credits. Recharge at kwtsms.com" };
+  }
+
+  // ── Create client ──
   const client = new KwtSmsClient({
     username: creds.username,
     password: creds.password,
-    senderId: params.senderId ?? creds.senderId,
-    testMode: params.testMode ?? creds.testMode,
+    senderId,
+    testMode,
   });
 
-  if (debug) console.log(`[SMS:debug] sending via API`, { senderId: params.senderId ?? creds.senderId, testMode: params.testMode ?? creds.testMode });
-
-  const result = await client.send(phoneResult.normalized, message, {
-    senderId: params.senderId ?? creds.senderId,
-    test: params.testMode ?? creds.testMode,
+  // ── Send ──
+  const cleanedMessage = cleanMessage(message);
+  const result = await client.send(normalized, cleanedMessage, {
+    senderId,
+    test: testMode,
   });
-
-  if (debug) console.log(`[SMS:debug] API response`, result.ok ? { ok: true, msgId: result.data["msg-id"], points: result.data["points-charged"] } : { ok: false, error: result.error });
 
   if (result.ok) {
     await createLog({
-      shop,
-      eventType,
-      phone: phoneResult.normalized,
-      message: cleanMessage(message),
-      senderId: params.senderId ?? creds.senderId,
-      recipientType: params.recipientType ?? "customer",
+      shop, eventType, phone: normalized.join(","),
+      recipientType, message: cleanedMessage, senderId,
       status: "sent",
       msgId: result.data["msg-id"],
       pointsCharged: result.data["points-charged"],
       balanceAfter: result.data["balance-after"],
       apiResponse: JSON.stringify(result.data),
-      testMode: params.testMode ?? creds.testMode,
+      testMode,
     });
 
+    // Update local balance from API response
     await updateBalanceFromResponse(shop, result.data["balance-after"]);
-
-    console.log("SMS sent", {
-      shop,
-      eventType,
-      phone: maskPhone(phoneResult.normalized),
-      msgId: result.data["msg-id"],
-      points: result.data["points-charged"],
-    });
 
     return {
       success: true,
@@ -143,30 +152,27 @@ export async function sendSms(params: {
     };
   }
 
+  // ── Failed ──
   await createLog({
-    shop,
-    eventType,
-    phone: phoneResult.normalized,
-    recipientType: params.recipientType ?? "customer",
-    message: cleanMessage(message),
-    senderId: params.senderId ?? creds.senderId,
+    shop, eventType, phone: normalized.join(","),
+    recipientType, message: cleanedMessage, senderId,
     status: "failed",
     errorCode: result.error.code,
     errorDescription: result.error.description,
     apiResponse: JSON.stringify(result.error),
-    testMode: params.testMode ?? creds.testMode,
-  });
-
-  console.error("SMS send failed", {
-    shop,
-    eventType,
-    errorCode: result.error.code,
-    errorDescription: result.error.description,
+    testMode,
   });
 
   return { success: false, error: result.error.description };
 }
 
+// Keep backward-compatible alias
+export const sendSms = send;
+
+/**
+ * Send a notification using a template. Resolves language, recipient type,
+ * and dispatches to send() for customer and/or admin.
+ */
 export async function sendNotification(params: {
   shop: string;
   eventType: string;
@@ -175,12 +181,6 @@ export async function sendNotification(params: {
   templateData: TemplateData;
 }): Promise<SendResult> {
   const { shop, eventType, phone, locale, templateData } = params;
-
-  // Check if SMS is enabled globally
-  const smsEnabled = await getSetting(shop, "sms_enabled");
-  if (smsEnabled === "false") {
-    return { success: false, error: "SMS notifications disabled" };
-  }
 
   // Check if this event type is enabled
   const eventKey = `notify_${eventType}`;
@@ -195,13 +195,10 @@ export async function sendNotification(params: {
     return { success: false, error: `No template found for ${eventType}` };
   }
 
-  // Use customer locale if available, fall back to shop default
-  const defaultLanguage = (await getSetting(shop, "default_language")) ?? "en";
+  // Resolve language
+  const defaultLanguage = (await getSetting(shop, "default_language")) || "en";
   const language = locale?.startsWith("ar") ? "ar" : locale ? "en" : defaultLanguage;
-  const templateText =
-    language === "ar" ? template.templateAr : template.templateEn;
-
-  // Render template
+  const templateText = language === "ar" ? template.templateAr : template.templateEn;
   const message = renderTemplate(templateText, templateData);
 
   const recipientType = template.recipientType ?? "customer";
@@ -209,21 +206,18 @@ export async function sendNotification(params: {
 
   // Send to customer
   if (recipientType === "customer" || recipientType === "both") {
-    results.push(await sendSms({ shop, phone, message, eventType, recipientType: "customer" }));
+    results.push(await send({ shop, phone, message, eventType, recipientType: "customer" }));
   }
 
   // Send to admin
   if (recipientType === "admin" || recipientType === "both") {
     const adminPhone = await getSetting(shop, "admin_phone");
     if (adminPhone) {
-      results.push(await sendSms({ shop, phone: adminPhone, message, eventType, recipientType: "admin" }));
-    } else {
-      console.warn(`[sendNotification] recipientType=${recipientType} but no admin_phone configured for ${shop}`);
+      results.push(await send({ shop, phone: adminPhone, message, eventType, recipientType: "admin" }));
     }
   }
 
-  // Return first failure or last success
   const failed = results.find((r) => !r.success);
   if (failed) return failed;
-  return results[results.length - 1] ?? { success: false, error: "No recipients" };
+  return results[results.length - 1] ?? { success: false, error: "No recipients configured" };
 }
