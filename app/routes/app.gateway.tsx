@@ -316,6 +316,14 @@ export default function GatewaySettings() {
               <br />
               <s-button variant="primary" type="submit">Save Settings</s-button>
             </Form>
+            <div style={{ textAlign: "right" }}>
+              <s-text>
+                * To buy a private Sender ID, visit your{" "}
+                <s-link href="https://www.kwtsms.com/login" target="_blank">
+                  kwtSMS dashboard
+                </s-link>.
+              </s-text>
+            </div>
           </s-section>
 
           <s-section>
