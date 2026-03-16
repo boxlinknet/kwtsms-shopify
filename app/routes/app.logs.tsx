@@ -230,12 +230,12 @@ export default function LogsPage() {
               {logs.map((log) => (
                 <s-table-row key={log.id}>
                   <s-table-cell>
-                    {new Date(log.createdAt).toLocaleString()}
+                    <span title={log.message}>{new Date(log.createdAt).toLocaleString()}</span>
                   </s-table-cell>
-                  <s-table-cell>{log.senderId}</s-table-cell>
-                  <s-table-cell>{log.phoneMasked}</s-table-cell>
-                  <s-table-cell>{log.recipientType ?? "customer"}</s-table-cell>
-                  <s-table-cell>{log.eventType}</s-table-cell>
+                  <s-table-cell><span title={log.message}>{log.senderId}</span></s-table-cell>
+                  <s-table-cell><span title={log.message}>{log.phoneMasked}</span></s-table-cell>
+                  <s-table-cell><span title={log.message}>{log.recipientType ?? "customer"}</span></s-table-cell>
+                  <s-table-cell><span title={log.message}>{log.eventType}</span></s-table-cell>
                   <s-table-cell>
                     <span title={log.status === "failed" || log.status === "skipped" ? (log.errorDescription ?? "Unknown error") : ""}>
                       <s-badge tone={statusBadgeTone(log.status)}>
