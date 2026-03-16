@@ -253,27 +253,21 @@ export default function LogsPage() {
         )}
       </s-section>
 
-      {/* Clear confirmation modal */}
+      {/* Clear confirmation */}
       {clearModalOpen && (
-        <s-modal
-          heading="Clear All Logs"
-          onHide={() => setClearModalOpen(false)}
-        >
-          <s-paragraph>
-            Are you sure you want to delete all SMS logs? This action cannot be
-            undone.
-          </s-paragraph>
-          {/* @ts-expect-error Shopify web component slot values */}
-          <s-button slot="primaryAction" tone="critical" onClick={handleClearLogs}>
-            Delete All Logs
-          </s-button>
-          <s-button
-            slot={"secondaryAction" as "secondaryaction"}
-            onClick={() => setClearModalOpen(false)}
-          >
-            Cancel
-          </s-button>
-        </s-modal>
+        <s-section>
+          <s-banner tone="critical">
+            Are you sure you want to delete all SMS logs? This cannot be undone.
+          </s-banner>
+          <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+            <s-button variant="primary" tone="critical" onClick={handleClearLogs}>
+              Yes, Delete All Logs
+            </s-button>
+            <s-button onClick={() => setClearModalOpen(false)}>
+              Cancel
+            </s-button>
+          </div>
+        </s-section>
       )}
     </s-page>
   );
